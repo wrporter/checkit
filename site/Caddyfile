@@ -1,0 +1,5 @@
+0.0.0.0
+browse
+
+proxy /api host.docker.internal:9000
+proxy /auth host.docker.internal:9000
