@@ -57,6 +57,10 @@ module.exports = {
         historyApiFallback: true,
         hot: true,
         open: true,
+        openPage: 'http://localhost:8080',
         host: '0.0.0.0',
+        proxy: {
+            '/api': 'http://localhost:9000',
+        },
     },
 };
