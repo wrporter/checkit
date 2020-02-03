@@ -46,6 +46,9 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './public/index.html',
             favicon: './public/favicon.ico',
+            apiKeys: {
+                google: process.env.GOOGLE_OAUTH_CLIENT_ID,
+            },
         }),
         new webpack.HotModuleReplacementPlugin(),
     ],

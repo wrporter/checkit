@@ -20,5 +20,5 @@ func main() {
 	})
 
 	log.Printf("listening on http://%s:%s/", "localhost:", appPort)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", appPort), s.Router))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", appPort), s.SessionManager.LoadAndSave(s.Router)))
 }

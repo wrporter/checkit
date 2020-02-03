@@ -33,7 +33,7 @@ func ValidateRequestJSON(t reflect.Type) Adapter {
 
 			requestBody := reflect.New(t).Interface()
 
-			contentType := "application/json; charset=utf-8"
+			contentType := "application/json"
 			if !strings.EqualFold(request.Header.Get("Content-Type"), contentType) {
 				RespondWithError(writer, request, ErrHTTPUnsupportedMediaType(fmt.Sprintf("Unsupported Media Type: %s. Must be of type: %s", request.Header.Get("Content-Type"), contentType)))
 				return

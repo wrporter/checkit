@@ -2,4 +2,8 @@
 browse
 
 proxy /api host.docker.internal:9000
-proxy /auth host.docker.internal:9000
+
+rewrite / {
+    if {path} not_match ^/api
+    to {path} /
+}

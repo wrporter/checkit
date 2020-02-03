@@ -1,14 +1,15 @@
 package auth
 
 import (
-	"context"
-	"encoding/json"
-	"github.com/coreos/go-oidc"
+	"encoding/gob"
+	"errors"
+	"github.com/alexedwards/scs/v2"
 	"github.com/julienschmidt/httprouter"
 	"github.com/wrporter/games-app/server/internal/env"
-	"golang.org/x/oauth2"
-	"log"
+	"github.com/wrporter/games-app/server/internal/server/httputil"
 	"net/http"
+	"reflect"
+	"time"
 )
 
 var (
@@ -16,77 +17,68 @@ var (
 	clientSecret = env.RequireEnv("GOOGLE_OAUTH_CLIENT_SECRET")
 )
 
-func RegisterRoutes(router *httprouter.Router) {
-	ctx := context.Background()
+const SessionCookieName = "acct"
 
-	provider, err := oidc.NewProvider(ctx, "https://accounts.google.com")
-	if err != nil {
-		log.Fatal(err)
-	}
-	oidcConfig := &oidc.Config{
-		ClientID: clientID,
-	}
-	verifier := provider.Verifier(oidcConfig)
-
-	config := oauth2.Config{
-		ClientID:     clientID,
-		ClientSecret: clientSecret,
-		Endpoint:     provider.Endpoint(),
-		RedirectURL:  "http://localhost:9000/auth/google/callback",
-		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
-	}
-
-	state := "foobar" // Don't do this in production.
-
-	router.GET("/auth", Login(config, state))
-	router.GET("/auth/google/callback", LoginCallback(config, state, verifier, ctx))
+func SetupSessionManager() *scs.SessionManager {
+	sessionManager := scs.New()
+	sessionManager.Lifetime = 1 * time.Hour
+	sessionManager.IdleTimeout = 20 * time.Minute
+	sessionManager.Cookie.Name = SessionCookieName
+	//sessionManager.Cookie.Domain = "example.com"
+	//sessionManager.Cookie.Path = "/example/"
+	sessionManager.Cookie.Persist = true
+	//sessionManager.Cookie.SameSite = http.SameSiteStrictMode
+	//sessionManager.Cookie.Secure = true
+	return sessionManager
 }
 
-func Login(config oauth2.Config, state string) httprouter.Handle {
-	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		http.Redirect(res, req, config.AuthCodeURL(state), http.StatusFound)
+type (
+	OAuthProfile struct {
+		ImageURL   string `json:"imageUrl"`
+		Email      string `json:"email"`
+		Name       string `json:"name"`
+		GivenName  string `json:"givenName"`
+		FamilyName string `json:"familyName"`
+	}
+
+	OAuthTokenRequestBody struct {
+		TokenID     string       `json:"tokenId"`
+		AccessToken string       `json:"accessToken"`
+		Profile     OAuthProfile `json:"profileObj"`
+	}
+)
+
+func RegisterRoutes(router *httprouter.Router, sessionManager *scs.SessionManager) {
+	router.POST("/api/google/login", httputil.Adapt(
+		PostLogin(sessionManager),
+		httputil.ValidateRequestJSON(reflect.TypeOf(OAuthTokenRequestBody{})),
+	))
+	router.GET("/api/user", GetUser(sessionManager))
+}
+
+func GetUser(sessionManager *scs.SessionManager) httprouter.Handle {
+	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		if auth := sessionManager.Get(request.Context(), ContextKey); auth != nil {
+			user := auth.(OAuthTokenRequestBody).Profile
+			httputil.RespondWithJSON(writer, request, user, 200)
+		} else {
+			httputil.RespondWithJSON(writer, request, struct {
+				Fail string
+			}{Fail: "Unauthorized"}, 403)
+		}
 	}
 }
 
-func LoginCallback(config oauth2.Config, state string, verifier *oidc.IDTokenVerifier, ctx context.Context) httprouter.Handle {
+func PostLogin(sessionManager *scs.SessionManager) httprouter.Handle {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		if req.URL.Query().Get("state") != state {
-			http.Error(res, "state did not match", http.StatusBadRequest)
-			return
-		}
-
-		oauth2Token, err := config.Exchange(ctx, req.URL.Query().Get("code"))
-		if err != nil {
-			http.Error(res, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		rawIDToken, ok := oauth2Token.Extra("id_token").(string)
+		body, ok := req.Context().Value(httputil.RequestBodyKey).(*OAuthTokenRequestBody)
 		if !ok {
-			http.Error(res, "No id_token field in oauth2 token.", http.StatusInternalServerError)
-			return
-		}
-		idToken, err := verifier.Verify(ctx, rawIDToken)
-		if err != nil {
-			http.Error(res, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
+			httputil.RespondWithError(res, req, errors.New("unable to find request body"))
 			return
 		}
 
-		oauth2Token.AccessToken = "*REDACTED*"
-
-		resp := struct {
-			OAuth2Token   *oauth2.Token
-			IDTokenClaims *json.RawMessage // ID Token payload is just JSON.
-		}{oauth2Token, new(json.RawMessage)}
-
-		if err := idToken.Claims(&resp.IDTokenClaims); err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		data, err := json.MarshalIndent(resp, "", "    ")
-		if err != nil {
-			http.Error(res, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		res.Write(data)
+		gob.Register(OAuthTokenRequestBody{})
+		sessionManager.Put(req.Context(), ContextKey, body)
+		httputil.RespondWithJSON(res, req, body.Profile, 200)
 	}
 }

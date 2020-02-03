@@ -3,9 +3,12 @@ package server
 import (
 	"context"
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/wrporter/games-app/server/internal/server/auth"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
+	"google.golang.org/appengine/log"
 	"net/http"
+	"runtime/debug"
 	"time"
 
 	"github.com/julienschmidt/httprouter"
@@ -18,16 +21,20 @@ const (
 type (
 	// Server implements http.Handler
 	Server struct {
-		Router *httprouter.Router
+		Router         *httprouter.Router
+		SessionManager *scs.SessionManager
 	}
 )
 
 func New() *Server {
 	router := setupRouter()
-	auth.RegisterRoutes(router)
+	sessionManager := auth.SetupSessionManager()
+
+	auth.RegisterRoutes(router, sessionManager)
 
 	return &Server{
-		Router: router,
+		Router:         router,
+		SessionManager: sessionManager,
 	}
 }
 
@@ -50,8 +57,7 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 }
 
 func panicHandler(writer http.ResponseWriter, request *http.Request, data interface{}) {
-	// TODO log error
-	// qzap.FromContext(request.Context()).Sugar().Errorf("Internal server error: %s\n%s", data, debug.Stack())
+	log.Errorf(request.Context(), "Internal server error: %s\n%s", data, debug.Stack())
 	httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError("Internal server error"))
 }
 
