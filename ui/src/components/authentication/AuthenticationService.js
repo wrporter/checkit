@@ -1,7 +1,7 @@
 export function getUser() {
     return fetch('/api/user').then(response => {
         if (response.status >= 400) {
-            throw new Error('Authentication failed!');
+            return;
         }
         return response.json();
     });
@@ -15,4 +15,10 @@ export function login(tokenCallback) {
         },
         body: JSON.stringify(tokenCallback),
     }).then(response => response.json());
+}
+
+export function logout() {
+    return fetch('/api/logout', {
+        method: 'POST',
+    }).then(() => null);
 }

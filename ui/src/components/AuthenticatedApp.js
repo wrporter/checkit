@@ -8,6 +8,8 @@ import Home from './pages/Home';
 import { makeStyles } from '@material-ui/core/styles';
 import Avatar from '@material-ui/core/Avatar';
 import { useUser } from './authentication/UserContext';
+import Button from '@material-ui/core/Button';
+import { useAuthentication } from './authentication/AuthenticationContext';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -24,6 +26,7 @@ const useStyles = makeStyles(theme => ({
 export default function AuthenticatedApp() {
     const classes = useStyles();
     const user = useUser();
+    const { logout } = useAuthentication();
 
     return (
         <BrowserRouter>
@@ -34,6 +37,9 @@ export default function AuthenticatedApp() {
                             <Link to="/">Site</Link>
                         </Typography>
                         <Avatar alt={user.name} src={user.imageUrl} />
+                        <Button color="inherit" onClick={logout}>
+                            Logout
+                        </Button>
                     </Toolbar>
                 </AppBar>
 

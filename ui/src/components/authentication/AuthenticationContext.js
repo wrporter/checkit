@@ -2,7 +2,7 @@ import React, { createContext, useContext } from 'react';
 import { useAsync } from 'react-async';
 import * as PropTypes from 'prop-types';
 import { bootstrapAppData } from '../utils/bootstrap';
-import { login as authLogin } from './AuthenticationService';
+import * as authService from './AuthenticationService';
 import FullPageSpinner from '../utils/FullPageSpinner';
 
 const AuthenticationContext = createContext();
@@ -42,11 +42,12 @@ function AuthenticationProvider(props) {
         }
     }
 
-    const login = tokenResponse => authLogin(tokenResponse).then(reload);
+    const login = tokenResponse =>
+        authService.login(tokenResponse).then(reload);
     // const register = form => authClient.register(form).then(reload);
     // const logout = () => authClient.logout().then(reload);
     const register = () => console.log('TODO register');
-    const logout = () => console.log('TODO logout');
+    const logout = () => authService.logout().then(reload);
 
     return (
         <AuthenticationContext.Provider
