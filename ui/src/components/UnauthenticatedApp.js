@@ -5,6 +5,8 @@ import FullPageContainer from './utils/FullPageContainer';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import Avatar from '@material-ui/core/Avatar';
+import logo from './logo-32x32.png';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -34,19 +36,24 @@ export default function UnauthenticatedApp() {
     return (
         <FullPageContainer className={classes.container}>
             <Grid container className={classes.form}>
-                <Grid container justify="center">
-                    <Typography
-                        variant="h4"
-                        component="h1"
-                        className={classes.title}
-                    >
-                        Sign In
-                    </Typography>
+                <Grid container justify="center" spacing={1}>
+                    <Grid item>
+                        <Avatar variant="square" src={logo} />
+                    </Grid>
+                    <Grid item>
+                        <Typography
+                            variant="h4"
+                            component="h1"
+                            className={classes.title}
+                        >
+                            Checkit
+                        </Typography>
+                    </Grid>
                 </Grid>
 
                 <Grid container justify="center">
                     <GoogleLogin
-                        clientId={window.RESOURCES.GOOGLE_API_KEY}
+                        clientId={window.RESOURCES.GOOGLE_CLIENT_ID}
                         onSuccess={login}
                         onFailure={failureCallback}
                     />
