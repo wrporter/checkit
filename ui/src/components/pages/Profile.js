@@ -1,10 +1,10 @@
 import React from 'react';
-import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { useUser } from '../authentication/UserContext';
 import Avatar from '@material-ui/core/Avatar';
 import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
 
 const useStyles = makeStyles(theme => ({
     avatar: {
@@ -18,7 +18,7 @@ export default function Profile() {
     const classes = useStyles();
 
     return (
-        <Container>
+        <Box>
             <Grid container spacing={2}>
                 <Grid item>
                     <Avatar
@@ -37,6 +37,6 @@ export default function Profile() {
                     </Grid>
                 </Grid>
             </Grid>
-        </Container>
+        </Box>
     );
 }

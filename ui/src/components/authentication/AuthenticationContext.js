@@ -45,7 +45,6 @@ function AuthenticationProvider(props) {
     const login = tokenResponse =>
         authService.login(tokenResponse).then(reload);
     // const register = form => authClient.register(form).then(reload);
-    // const logout = () => authClient.logout().then(reload);
     const register = () => console.log('TODO register');
     const logout = () => authService.logout().then(reload);
 

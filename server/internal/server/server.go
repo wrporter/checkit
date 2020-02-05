@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
-	"github.com/wrporter/games-app/server/internal/server/auth"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
-	"google.golang.org/appengine/log"
+	"github.com/wrporter/games-app/server/internal/server/session"
+	"github.com/wrporter/games-app/server/internal/server/store"
+	"log"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -23,18 +24,15 @@ type (
 	Server struct {
 		Router         *httprouter.Router
 		SessionManager *scs.SessionManager
+		Store          store.Store
 	}
 )
 
 func New() *Server {
-	router := setupRouter()
-	sessionManager := auth.SetupSessionManager()
-
-	auth.RegisterRoutes(router, sessionManager)
-
 	return &Server{
-		Router:         router,
-		SessionManager: sessionManager,
+		Router:         setupRouter(),
+		SessionManager: session.SetupSessionManager(),
+		Store:          store.New(),
 	}
 }
 
@@ -57,7 +55,7 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 }
 
 func panicHandler(writer http.ResponseWriter, request *http.Request, data interface{}) {
-	log.Errorf(request.Context(), "Internal server error: %s\n%s", data, debug.Stack())
+	log.Printf("Internal server error: %s\n%s", data, debug.Stack())
 	httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError("Internal server error"))
 }
 

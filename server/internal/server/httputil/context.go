@@ -2,6 +2,7 @@ package httputil
 
 import (
 	"context"
+	"net/http"
 )
 
 type (
@@ -18,6 +19,10 @@ const (
 	RequestQueryKey    contextKey = "requestQuery"
 	AuthType           contextKey = "authType"
 )
+
+func GetRequestBody(r *http.Request) interface{} {
+	return r.Context().Value(RequestBodyKey)
+}
 
 // SetAuthenticatedIDs on the context
 func SetAuthenticatedIDs(ctx context.Context, userID, brandID string) context.Context {

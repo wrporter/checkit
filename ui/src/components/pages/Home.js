@@ -1,20 +1,15 @@
 import React from 'react';
-import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import { TextField } from '@material-ui/core';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import { makeStyles } from '@material-ui/core/styles';
+import Box from '@material-ui/core/Box';
+import * as itemService from './ItemService';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { useAsync } from 'react-async';
 
-function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        const r = (Math.random() * 16) | 0,
-            v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-    });
-}
-
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     input: {
         marginTop: 12,
         marginBottom: 24,
@@ -23,13 +18,18 @@ const useStyles = makeStyles(theme => ({
 
 export default function Home() {
     const classes = useStyles();
-
     const [value, setValue] = React.useState('');
-    const [items, setItems] = React.useState([]);
+    const { data = { items: [] }, setData, error, isPending } = useAsync({
+        promiseFn: itemService.getItems,
+    });
+
     const handleKeyDown = e => {
         if (e.key === 'Enter') {
-            setItems([{ id: uuidv4(), text: e.target.value }].concat(items));
-            setValue('');
+            const item = { text: e.target.value };
+            itemService.saveItem(item).then(savedItem => {
+                setData({ items: [savedItem].concat(data.items) });
+                setValue('');
+            });
         }
     };
     const handleChange = e => {
@@ -37,7 +37,7 @@ export default function Home() {
     };
 
     return (
-        <Container>
+        <Box>
             <Typography variant="h2">Get stuff done!</Typography>
             <TextField
                 label="What do you want to do?"
@@ -47,14 +47,22 @@ export default function Home() {
                 onChange={handleChange}
                 className={classes.input}
             />
-            {items.map(item => (
-                <FormControlLabel
-                    key={item.id}
-                    control={<Checkbox />}
-                    label={item.text}
-                    style={{ width: '100%' }}
-                />
-            ))}
-        </Container>
+            <Box>
+                {isPending ? (
+                    <CircularProgress />
+                ) : error ? (
+                    'Failed to load!'
+                ) : data && data.items ? (
+                    data.items.map(item => (
+                        <FormControlLabel
+                            key={item.id}
+                            control={<Checkbox />}
+                            label={item.text}
+                            style={{ width: '100%' }}
+                        />
+                    ))
+                ) : null}
+            </Box>
+        </Box>
     );
 }

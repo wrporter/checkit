@@ -15,6 +15,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import Container from '@material-ui/core/Container';
 import logo from './logo-32x32.png';
+import Box from '@material-ui/core/Box';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -28,7 +29,7 @@ const useStyles = makeStyles(theme => ({
     },
     content: {
         backgroundColor: '#f3f3f3',
-        paddingTop: 32,
+        padding: 32,
         height: 'calc(100vh - 65px)',
     },
     menuButton: {
@@ -114,7 +115,7 @@ export default function AuthenticatedApp() {
                     </Toolbar>
                 </AppBar>
 
-                <Container className={classes.content}>
+                <Box className={classes.content}>
                     <Switch>
                         <Route path="/profile">
                             <Profile />
@@ -123,7 +124,7 @@ export default function AuthenticatedApp() {
                             <Home />
                         </Route>
                     </Switch>
-                </Container>
+                </Box>
             </div>
         </BrowserRouter>
     );
