@@ -1,7 +1,9 @@
 0.0.0.0
 browse
+gzip
+log stdout
 
-proxy /api host.docker.internal:9000
+proxy /api {$API_HOST}:9000
 
 rewrite / {
     if {path} not_match ^/api

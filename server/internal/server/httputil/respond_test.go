@@ -3,7 +3,6 @@ package httputil
 import (
 	"context"
 	"errors"
-	"gitlab-app.eng.qops.net/golang/transaction"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -128,8 +127,8 @@ func TestRespondWithError(t *testing.T) {
 		rr := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
 		ctx := context.Background()
-		tx := transaction.Transaction{TransactionID: "b99ef861-9978-4042-887c-5ff6c8861e6c"}
-		ctx = transaction.SetOnContext(ctx, tx)
+		//tx := transaction.Transaction{TransactionID: "b99ef861-9978-4042-887c-5ff6c8861e6c"}
+		//ctx = transaction.SetOnContext(ctx, tx)
 		req = req.WithContext(ctx)
 		RespondWithError(rr, req, c.err)
 		result := rr.Result()

@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"fmt"
 	"github.com/wrporter/games-app/server/internal/env"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,7 +23,7 @@ type MongoStore struct {
 }
 
 func New() Store {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:27017", env.MongoHost))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		env.RequireNoErr(err)

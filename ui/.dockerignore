@@ -1,0 +1,9 @@
+*
+!.ci/Caddyfile
+!public
+!src
+!.babelrc
+!.eslintrc.yml
+!package.json
+!package-lock.json
+!webpack.config.js

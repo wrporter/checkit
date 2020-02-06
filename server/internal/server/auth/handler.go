@@ -31,6 +31,9 @@ func RegisterRoutes(server *server.Server) {
 	server.Router.GET("/api/user", httputil.Adapt(
 		GetUser(server.SessionManager),
 		WithAuth(server.SessionManager)))
+	server.Router.GET("/api/health", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		httputil.RespondWithJSON(writer, request, map[string]string{"status": "ok"}, http.StatusOK)
+	})
 }
 
 func Logout(manager *scs.SessionManager) httprouter.Handle {
@@ -68,6 +71,9 @@ func Login(store store.Store, sessionManager *scs.SessionManager) httprouter.Han
 			body.User.ID = oid
 			id = oid.Hex()
 			log.Printf("User registered - %s\n", id)
+		} else if err != nil {
+			log.Printf("Failed to get user from database: %s\n", err.Error())
+			httputil.RespondWithError(res, req, httputil.ErrHTTPInternalServerError("Failed to login"))
 		} else {
 			id = u.ID.Hex()
 			body.User.ID = u.ID

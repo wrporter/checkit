@@ -1,9 +1,8 @@
 package httputil
 
 import (
+	"github.com/go-playground/validator/v10"
 	"testing"
-
-	"gopkg.in/go-playground/validator.v9"
 )
 
 func TestValidateQualtricsID(t *testing.T) {
