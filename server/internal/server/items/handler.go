@@ -14,7 +14,7 @@ import (
 
 type (
 	ItemRequest struct {
-		Text string `json:"text"`
+		Text string `json:"text" validate:"required,max=250"`
 	}
 
 	ItemResponse struct {

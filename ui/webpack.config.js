@@ -58,8 +58,10 @@ module.exports = {
         hot: true,
         open: true,
         https: true,
-        openPage: 'https://localhost:8080',
+        port: '9010',
+        openPage: 'https://localhost:9010',
         host: '0.0.0.0',
+        disableHostCheck: true,
         proxy: {
             '/api': 'http://localhost:9000',
         },

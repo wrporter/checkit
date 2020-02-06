@@ -31,7 +31,7 @@ type (
 func New() *Server {
 	return &Server{
 		Router:         setupRouter(),
-		SessionManager: session.SetupSessionManager(),
+		SessionManager: session.NewManager(),
 		Store:          store.New(),
 	}
 }
@@ -50,6 +50,8 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 
 	// TODO apply context data such as request transaction identifiers
 	request = request.WithContext(ctx)
+
+	log.Printf("%s %s\n", request.Method, request.URL.Path)
 
 	server.Router.ServeHTTP(writer, request)
 }

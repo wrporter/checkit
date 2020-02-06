@@ -6,7 +6,7 @@ var (
 	AppHost  = DefaultEnv("APP_HOST", "localhost")
 	AppPort  = DefaultEnv("APP_PORT", "9000")
 	SiteHost = DefaultEnv("SITE_HOST", "localhost")
-	SitePort = DefaultEnv("SITE_PORT", "8080")
+	SitePort = DefaultEnv("SITE_PORT", "9010")
 )
 
 func AppDomain() string {

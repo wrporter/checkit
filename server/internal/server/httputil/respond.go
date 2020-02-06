@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -11,7 +12,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"gopkg.in/go-playground/validator.v9"
 )
 
 type (

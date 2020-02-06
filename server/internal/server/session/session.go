@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const SessionCookieName = "acct"
+const CookieName = "acct"
 const ContextKey = "session.context"
 
 type (
@@ -21,13 +21,13 @@ type (
 	}
 )
 
-func SetupSessionManager() *scs.SessionManager {
+func NewManager() *scs.SessionManager {
 	gob.Register(OAuthSession{})
 
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 1 * time.Hour
 	sessionManager.IdleTimeout = 30 * time.Minute
-	sessionManager.Cookie.Name = SessionCookieName
+	sessionManager.Cookie.Name = CookieName
 	sessionManager.Cookie.Domain = env.SiteHost
 	sessionManager.Cookie.Path = "/"
 	sessionManager.Cookie.Persist = true

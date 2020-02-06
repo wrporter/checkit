@@ -20,11 +20,8 @@ var (
 	clientSecret = env.RequireEnv("GOOGLE_OAUTH_CLIENT_SECRET")
 )
 
-// TODO create authentication adapter for all auth routes
 // TODO switch from Implicit Grant Flow to Authorization Code Flow
-// TODO implement CSRF protection (how to do for Single-Page App?)
 func RegisterRoutes(server *server.Server) {
-
 	server.Router.POST("/api/google/login", httputil.Adapt(
 		Login(server.Store, server.SessionManager),
 		httputil.ValidateRequestJSON(reflect.TypeOf(session.OAuthSession{})),

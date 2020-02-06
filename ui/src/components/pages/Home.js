@@ -22,14 +22,19 @@ export default function Home() {
     const { data = { items: [] }, setData, error, isPending } = useAsync({
         promiseFn: itemService.getItems,
     });
+    const [saveError, setSaveError] = React.useState('');
 
     const handleKeyDown = e => {
+        setSaveError('');
         if (e.key === 'Enter') {
             const item = { text: e.target.value };
-            itemService.saveItem(item).then(savedItem => {
-                setData({ items: [savedItem].concat(data.items) });
-                setValue('');
-            });
+            itemService
+                .saveItem(item)
+                .then(savedItem => {
+                    setData({ items: [savedItem].concat(data.items) });
+                    setValue('');
+                })
+                .catch(err => setSaveError(err.message));
         }
     };
     const handleChange = e => {
@@ -47,6 +52,9 @@ export default function Home() {
                 onChange={handleChange}
                 className={classes.input}
             />
+            {saveError ? (
+                <Typography style={{ color: 'red' }}>{saveError}</Typography>
+            ) : null}
             <Box>
                 {isPending ? (
                     <CircularProgress />
