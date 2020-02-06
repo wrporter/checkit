@@ -11,7 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"net/http"
-	"reflect"
 )
 
 var (
@@ -24,7 +23,7 @@ var (
 func RegisterRoutes(server *server.Server) {
 	server.Router.POST("/api/google/login", httputil.Adapt(
 		Login(server.Store, server.SessionManager),
-		httputil.ValidateRequestJSON(reflect.TypeOf(session.OAuthSession{})),
+		httputil.ValidateRequestJSON(session.OAuthSession{}),
 	))
 	server.Router.POST("/api/logout", httputil.Adapt(
 		Logout(server.SessionManager),

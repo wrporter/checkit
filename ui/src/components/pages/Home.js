@@ -1,13 +1,14 @@
 import React from 'react';
 import Typography from '@material-ui/core/Typography';
 import { TextField } from '@material-ui/core';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
 import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
-import * as itemService from './ItemService';
+import * as itemService from '../items/ItemService';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useAsync } from 'react-async';
+import Item from '../items/Item';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Switch from '@material-ui/core/Switch';
 
 const useStyles = makeStyles(() => ({
     input: {
@@ -18,11 +19,14 @@ const useStyles = makeStyles(() => ({
 
 export default function Home() {
     const classes = useStyles();
+    const [hideCompleted, setHideCompleted] = React.useState(true);
     const [value, setValue] = React.useState('');
-    const { data = { items: [] }, setData, error, isPending } = useAsync({
-        promiseFn: itemService.getItems,
-    });
     const [saveError, setSaveError] = React.useState('');
+    const [items, setItems] = React.useState([]);
+    const { error, isPending } = useAsync({
+        promiseFn: itemService.getItems,
+        onResolve: value => setItems(value.items),
+    });
 
     const handleKeyDown = e => {
         setSaveError('');
@@ -31,7 +35,7 @@ export default function Home() {
             itemService
                 .saveItem(item)
                 .then(savedItem => {
-                    setData({ items: [savedItem].concat(data.items) });
+                    setItems([savedItem].concat(items));
                     setValue('');
                 })
                 .catch(err => setSaveError(err.message));
@@ -55,18 +59,28 @@ export default function Home() {
             {saveError ? (
                 <Typography style={{ color: 'red' }}>{saveError}</Typography>
             ) : null}
+            <FormControlLabel
+                control={
+                    <Switch
+                        checked={hideCompleted}
+                        onChange={e => setHideCompleted(e.target.checked)}
+                    />
+                }
+                label="Hide completed items"
+            />
             <Box>
                 {isPending ? (
                     <CircularProgress />
                 ) : error ? (
                     'Failed to load!'
-                ) : data && data.items ? (
-                    data.items.map(item => (
-                        <FormControlLabel
+                ) : items ? (
+                    items.map(item => (
+                        <Item
                             key={item.id}
-                            control={<Checkbox />}
-                            label={item.text}
-                            style={{ width: '100%' }}
+                            id={item.id}
+                            text={item.text}
+                            dateCompleted={item.dateCompleted}
+                            hideCompleted={hideCompleted}
                         />
                     ))
                 ) : null}

@@ -15,6 +15,21 @@ export function saveItem(item) {
         .then(response => response.json());
 }
 
+export function updateItemStatus(itemId, status) {
+    return fetch(`/api/items/${itemId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+    }).then(response => {
+        if (response.status >= 400) {
+            throw new Error('Failed to update item status. Please try again.');
+        }
+        return response;
+    });
+}
+
 export function getItems() {
     return fetch('/api/items').then(response => response.json());
 }

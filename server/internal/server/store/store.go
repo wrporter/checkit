@@ -14,6 +14,7 @@ type Store interface {
 
 	SaveItem(userID primitive.ObjectID, text string) (Item, error)
 	GetItemsForUser(userID primitive.ObjectID) ([]Item, error)
+	UpdateItemStatus(userID primitive.ObjectID, itemID string, status ItemStatus) error
 }
 
 type MongoStore struct {

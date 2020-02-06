@@ -21,8 +21,8 @@ var (
 func init() {
 	setupTranslations()
 	transformToJSONNamespaces()
-	registerValidator("qualtricsID", validateQualtricsID, "{0} must be a qualtrics GUID")
-	registerValidator("absoluteURLPath", validateAbsoluteURLPath, "{0} must be an absolute URL path")
+	RegisterValidator("qualtricsID", validateQualtricsID, "{0} must be a qualtrics GUID")
+	RegisterValidator("absoluteURLPath", validateAbsoluteURLPath, "{0} must be an absolute URL path")
 }
 
 func transformToJSONNamespaces() {
@@ -62,7 +62,7 @@ func ValidateUUID(uuid string) error {
 	return validator.New().Var(uuid, "uuid")
 }
 
-func registerValidator(name string, validatorFunc func(fl validator.FieldLevel) bool, errorMessage string) {
+func RegisterValidator(name string, validatorFunc func(fl validator.FieldLevel) bool, errorMessage string) {
 	_ = validate.RegisterValidation(name, validatorFunc)
 	_ = validate.RegisterTranslation(name, translator, func(ut ut.Translator) error {
 		return ut.Add(name, errorMessage, true)

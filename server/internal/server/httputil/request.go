@@ -20,7 +20,8 @@ type DefaultProducer interface {
 }
 
 // ValidateRequestJSON is an Adapter that unmarshals the request body as JSON, validates it, then puts it on the context
-func ValidateRequestJSON(t reflect.Type) Adapter {
+func ValidateRequestJSON(container interface{}) Adapter {
+	t := reflect.TypeOf(container)
 	return func(handle httprouter.Handle) httprouter.Handle {
 		return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 			b, err := ioutil.ReadAll(request.Body)

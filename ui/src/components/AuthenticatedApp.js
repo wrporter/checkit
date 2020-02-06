@@ -13,7 +13,6 @@ import { useAuthentication } from './authentication/AuthenticationContext';
 import { Menu } from '@material-ui/core';
 import MenuItem from '@material-ui/core/MenuItem';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
-import Container from '@material-ui/core/Container';
 import logo from './logo-32x32.png';
 import Box from '@material-ui/core/Box';
 
