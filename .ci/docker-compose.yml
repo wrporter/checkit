@@ -1,0 +1,32 @@
+version: '3.6'
+services:
+  checkit-ui:
+    container_name: checkit-ui
+    image: checkit-ui
+    restart: unless-stopped
+    ports:
+      - 9010:2015
+    environment:
+      - API_HOST=apihost
+    links:
+      - "checkit-api:apihost"
+  checkit-api:
+    container_name: checkit-api
+    image: checkit-api
+    restart: unless-stopped
+    ports:
+      - 9000:9000
+    environment:
+      - GOOGLE_OAUTH_CLIENT_ID=TODO
+      - GOOGLE_OAUTH_CLIENT_SECRET=TODO
+      - APP_HOST=
+      - SITE_HOST=checkit.sunbeam.cf
+      - MONGO_HOST=dbhost
+    links:
+      - "mongo:dbhost"
+  mongo:
+    container_name: checkit-mongo
+    image: mongo
+    restart: unless-stopped
+    volumes:
+      - /home/x-wing/www/checkit/mongo:/data/db

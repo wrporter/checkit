@@ -19,3 +19,7 @@ The server is written in Golang with MongoDB storage.
 ## TODO
 
 - Switch from the now-insecure Implicit Grant Flow to the Authorization Code Flow for OpenID Connect.
+- Use WebSockets to automatically log the user out of the UI when their session expires.
+- Create a chat using WebSockets for users to share tips on productivity.
+- Optimize UI assets.
+- Support mobile.
