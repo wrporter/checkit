@@ -47,5 +47,8 @@ func NewManager() *scs.SessionManager {
 }
 
 func Get(sessionManager *scs.SessionManager, ctx context.Context) OAuthSession {
-	return sessionManager.Get(ctx, ContextKey).(OAuthSession)
+	if sess, ok := sessionManager.Get(ctx, ContextKey).(OAuthSession); ok {
+		return sess
+	}
+	return OAuthSession{}
 }

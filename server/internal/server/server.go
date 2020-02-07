@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
@@ -26,7 +27,27 @@ type (
 		SessionManager *scs.SessionManager
 		Store          store.Store
 	}
+
+	statusWriter struct {
+		http.ResponseWriter
+		status int
+		length int
+	}
 )
+
+func (w *statusWriter) WriteHeader(status int) {
+	w.status = status
+	w.ResponseWriter.WriteHeader(status)
+}
+
+func (w *statusWriter) Write(b []byte) (int, error) {
+	if w.status == 0 {
+		w.status = 200
+	}
+	n, err := w.ResponseWriter.Write(b)
+	w.length += n
+	return n, err
+}
 
 func New() *Server {
 	return &Server{
@@ -45,15 +66,39 @@ func setupRouter() *httprouter.Router {
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
+	start := time.Now()
 	ctx, cancel := context.WithTimeout(request.Context(), requestTimeout)
 	defer cancel()
 
 	// TODO apply context data such as request transaction identifiers
 	request = request.WithContext(ctx)
 
-	log.Printf("%s %s\n", request.Method, request.URL.Path)
+	sw := statusWriter{ResponseWriter: writer}
+	server.Router.ServeHTTP(&sw, request)
 
-	server.Router.ServeHTTP(writer, request)
+	defer server.logAccess(sw, request, start)
+}
+
+func (server *Server) logAccess(sw statusWriter, request *http.Request, start time.Time) {
+	sess := session.Get(server.SessionManager, request.Context())
+
+	access := map[string]interface{}{
+		"host":   request.Host,
+		"url":    request.URL.Path,
+		"method": request.Method,
+		"status": sw.status,
+		"time":   time.Since(start).Milliseconds(),
+	}
+	if sess.AccessToken != "" {
+		access["userId"] = sess.User.ID.Hex()
+	}
+
+	accessJsonString, err := json.Marshal(access)
+	if err != nil {
+		log.Printf("Failed to marshal access logs %v\n", err.Error())
+	} else {
+		log.Printf(`[access] %s"`, accessJsonString)
+	}
 }
 
 func panicHandler(writer http.ResponseWriter, request *http.Request, data interface{}) {

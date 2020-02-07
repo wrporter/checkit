@@ -15,5 +15,5 @@ func main() {
 	items.RegisterRoutes(s)
 
 	log.Printf("listening on http://%s", env.AppDomain())
-	log.Fatal(http.ListenAndServe(env.AppDomain(), s.SessionManager.LoadAndSave(s.Router)))
+	log.Fatal(http.ListenAndServe(env.AppDomain(), s.SessionManager.LoadAndSave(s)))
 }
