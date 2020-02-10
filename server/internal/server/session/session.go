@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const CookieName = "acct"
+const CookieName = "SessionID"
 const ContextKey = "session.context"
 
 type (
@@ -21,12 +21,17 @@ type (
 	}
 )
 
-func NewManager() *scs.SessionManager {
+type Manager struct {
+	Hub     *hub
+	Manager *scs.SessionManager
+}
+
+func NewManager() *Manager {
 	gob.Register(OAuthSession{})
 
 	sessionManager := scs.New()
-	sessionManager.Lifetime = 1 * time.Hour
-	sessionManager.IdleTimeout = 30 * time.Minute
+	sessionManager.Lifetime = 24 * time.Hour
+	sessionManager.IdleTimeout = 2 * time.Hour
 	sessionManager.Cookie.Name = CookieName
 	sessionManager.Cookie.Domain = env.SiteHost
 	sessionManager.Cookie.Path = "/"
@@ -41,13 +46,20 @@ func NewManager() *scs.SessionManager {
 	//		return redis.Dial("tcp", "localhost:6379")
 	//	},
 	//}
-	//sessionManager.Store = redisstore.New(pool)
+	//sessionManager.MemoryStore = redisstore.New(pool)
 
-	return sessionManager
+	hub := newHub()
+	go hub.run()
+	sessionManager.Store = newStore(hub)
+
+	return &Manager{
+		Hub:     hub,
+		Manager: sessionManager,
+	}
 }
 
-func Get(sessionManager *scs.SessionManager, ctx context.Context) OAuthSession {
-	if sess, ok := sessionManager.Get(ctx, ContextKey).(OAuthSession); ok {
+func Get(sessionManager *Manager, ctx context.Context) OAuthSession {
+	if sess, ok := sessionManager.Manager.Get(ctx, ContextKey).(OAuthSession); ok {
 		return sess
 	}
 	return OAuthSession{}

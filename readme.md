@@ -23,3 +23,7 @@ The server is written in Golang with MongoDB storage.
 - Create a chat using WebSockets for users to share tips on productivity.
 - Optimize UI assets.
 - Support mobile.
+- Add ability to delete items.
+- Add ability to delete all completed items.
+- Add limits of how many items a user can have so someone doesn't take down my server 😆.
+- Add rate limiting for requests.

@@ -48,7 +48,7 @@ const useStyles = makeStyles(theme => ({
 export default function AuthenticatedApp() {
     const classes = useStyles();
     const user = useUser();
-    const { logout } = useAuthentication();
+    const { logout, reload } = useAuthentication();
 
     const [open, setOpen] = React.useState(false);
     const anchorRef = React.useRef();
@@ -62,6 +62,13 @@ export default function AuthenticatedApp() {
         handleClose();
         logout();
     };
+
+    React.useEffect(() => {
+        const ws = new WebSocket(
+            `wss://${document.location.host}/api/keepalive`
+        );
+        ws.onclose = reload;
+    }, []);
 
     return (
         <BrowserRouter>

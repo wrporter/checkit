@@ -63,7 +63,10 @@ module.exports = {
         host: '0.0.0.0',
         disableHostCheck: true,
         proxy: {
-            '/api': 'http://localhost:9000',
+            '/api': {
+                target: 'http://localhost:9000',
+                ws: true,
+            },
         },
     },
 };

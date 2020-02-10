@@ -33,16 +33,16 @@ type (
 func RegisterRoutes(s *server.Server) {
 	s.Router.GET("/api/items", httputil.Adapt(
 		GetItems(s),
-		auth.WithAuth(s.SessionManager),
+		auth.WithAuth(s.SessionManager.Manager),
 	))
 	s.Router.POST("/api/items", httputil.Adapt(
 		PostItem(s),
-		auth.WithAuth(s.SessionManager),
+		auth.WithAuth(s.SessionManager.Manager),
 		httputil.ValidateRequestJSON(ItemRequest{}),
 	))
 	s.Router.POST(fmt.Sprintf("/api/items/:%s", ParamItemID), httputil.Adapt(
 		UpdateItemStatus(s),
-		auth.WithAuth(s.SessionManager),
+		auth.WithAuth(s.SessionManager.Manager),
 		httputil.ValidateRequestJSON(ItemUpdateStatusRequest{}),
 	))
 }

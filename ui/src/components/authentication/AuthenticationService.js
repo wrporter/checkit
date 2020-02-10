@@ -1,6 +1,6 @@
 export function getUser() {
     return fetch('/api/user').then(response => {
-        if (response.status >= 400) {
+        if (response.status === 204 || response.status >= 400) {
             return;
         }
         return response.json();

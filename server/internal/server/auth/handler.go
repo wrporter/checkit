@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/alexedwards/scs/v2"
+	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 	"github.com/wrporter/games-app/server/internal/env"
 	"github.com/wrporter/games-app/server/internal/server"
@@ -17,29 +18,67 @@ var (
 	// TODO: Use for Authorization Code Flow
 	clientID     = env.RequireEnv("GOOGLE_OAUTH_CLIENT_ID")
 	clientSecret = env.RequireEnv("GOOGLE_OAUTH_CLIENT_SECRET")
+
+	upgrader = websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 )
 
 // TODO switch from Implicit Grant Flow to Authorization Code Flow
 func RegisterRoutes(server *server.Server) {
 	server.Router.POST("/api/google/login", httputil.Adapt(
-		Login(server.Store, server.SessionManager),
+		Login(server.Store, server.SessionManager.Manager),
 		httputil.ValidateRequestJSON(session.OAuthSession{}),
 	))
+
 	server.Router.POST("/api/logout", httputil.Adapt(
 		Logout(server.SessionManager),
-		WithAuth(server.SessionManager)))
-	server.Router.GET("/api/user", httputil.Adapt(
-		GetUser(server.SessionManager),
-		WithAuth(server.SessionManager)))
-	server.Router.GET("/api/health", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		httputil.RespondWithJSON(writer, request, map[string]string{"status": "ok"}, http.StatusOK)
-	})
+		WithAuth(server.SessionManager.Manager)))
+
+	server.Router.GET("/api/user", GetUser(server.SessionManager))
+
+	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))
 }
 
-func Logout(manager *scs.SessionManager) httprouter.Handle {
+// TODO store the session token on the session object
+func Keepalive(sessionManager *session.Manager) httprouter.Handle {
+	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		sess := session.Get(sessionManager, request.Context())
+
+		conn, err := upgrader.Upgrade(writer, request, nil)
+		if err != nil {
+			log.Println("[error] failed to upgrade route to websocket protocol", err.Error())
+			return
+		}
+		defer conn.Close()
+
+		cookie, err := request.Cookie(session.CookieName)
+		if err != nil {
+			log.Print("Failed to get session token cookie", err.Error())
+			return
+		}
+		client := &session.Client{
+			Token:  cookie.Value,
+			Delete: make(chan bool),
+		}
+		sessionManager.Hub.Register <- client
+
+		select {
+		case <-client.Delete:
+			log.Printf("Session expired for user %s", sess.User.ID.Hex())
+			sessionManager.Hub.Unregister <- cookie.Value
+		}
+	}
+}
+
+func Logout(manager *session.Manager) httprouter.Handle {
 	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		sess := session.Get(manager, request.Context())
-		err := manager.Destroy(request.Context())
+		err := manager.Manager.Destroy(request.Context())
 		if err != nil {
 			httputil.RespondWithError(writer, request, err)
 			return
@@ -49,8 +88,13 @@ func Logout(manager *scs.SessionManager) httprouter.Handle {
 	}
 }
 
-func GetUser(sessionManager *scs.SessionManager) httprouter.Handle {
+func GetUser(sessionManager *session.Manager) httprouter.Handle {
 	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		if auth := sessionManager.Manager.Get(request.Context(), session.ContextKey); auth == nil {
+			writer.WriteHeader(http.StatusNoContent)
+			return
+		}
+
 		sess := session.Get(sessionManager, request.Context())
 		httputil.RespondWithJSON(writer, request, sess.User, 200)
 	}

@@ -1,14 +1,16 @@
 package server
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/alexedwards/scs/v2"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
 	"github.com/wrporter/games-app/server/internal/server/session"
 	"github.com/wrporter/games-app/server/internal/server/store"
 	"log"
+	"net"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -24,23 +26,23 @@ type (
 	// Server implements http.Handler
 	Server struct {
 		Router         *httprouter.Router
-		SessionManager *scs.SessionManager
+		SessionManager *session.Manager
 		Store          store.Store
 	}
 
-	statusWriter struct {
+	responseRecorder struct {
 		http.ResponseWriter
 		status int
 		length int
 	}
 )
 
-func (w *statusWriter) WriteHeader(status int) {
+func (w *responseRecorder) WriteHeader(status int) {
 	w.status = status
 	w.ResponseWriter.WriteHeader(status)
 }
 
-func (w *statusWriter) Write(b []byte) (int, error) {
+func (w *responseRecorder) Write(b []byte) (int, error) {
 	if w.status == 0 {
 		w.status = 200
 	}
@@ -49,12 +51,25 @@ func (w *statusWriter) Write(b []byte) (int, error) {
 	return n, err
 }
 
+func (w *responseRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := w.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, errors.New("error in hijacker")
+}
+
 func New() *Server {
-	return &Server{
+	server := &Server{
 		Router:         setupRouter(),
 		SessionManager: session.NewManager(),
 		Store:          store.New(),
 	}
+
+	server.Router.GET("/api/health", func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		httputil.RespondWithJSON(writer, request, map[string]string{"status": "ok"}, http.StatusOK)
+	})
+
+	return server
 }
 
 func setupRouter() *httprouter.Router {
@@ -73,21 +88,25 @@ func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Reques
 	// TODO apply context data such as request transaction identifiers
 	request = request.WithContext(ctx)
 
-	sw := statusWriter{ResponseWriter: writer}
+	sw := responseRecorder{ResponseWriter: writer}
 	server.Router.ServeHTTP(&sw, request)
 
 	defer server.logAccess(sw, request, start)
 }
 
-func (server *Server) logAccess(sw statusWriter, request *http.Request, start time.Time) {
+func (server *Server) logAccess(sw responseRecorder, request *http.Request, start time.Time) {
 	sess := session.Get(server.SessionManager, request.Context())
 
 	access := map[string]interface{}{
-		"host":   request.Host,
-		"url":    request.URL.Path,
-		"method": request.Method,
-		"status": sw.status,
-		"time":   time.Since(start).Milliseconds(),
+		"host":      request.Host,
+		"clientIP":  getIp(request),
+		"userAgent": request.UserAgent(),
+		"url":       request.URL.Path,
+		"bytesIn":   request.ContentLength,
+		"method":    request.Method,
+		"bytes":     sw.length,
+		"status":    sw.status,
+		"time":      time.Since(start).Milliseconds(),
 	}
 	if sess.AccessToken != "" {
 		access["userId"] = sess.User.ID.Hex()
@@ -97,8 +116,16 @@ func (server *Server) logAccess(sw statusWriter, request *http.Request, start ti
 	if err != nil {
 		log.Printf("Failed to marshal access logs %v\n", err.Error())
 	} else {
-		log.Printf(`[access] %s"`, accessJsonString)
+		log.Printf("[access] %s", accessJsonString)
 	}
+}
+
+func getIp(r *http.Request) string {
+	forwarded := r.Header.Get("X-FORWARDED-FOR")
+	if forwarded != "" {
+		return forwarded
+	}
+	return r.RemoteAddr
 }
 
 func panicHandler(writer http.ResponseWriter, request *http.Request, data interface{}) {
