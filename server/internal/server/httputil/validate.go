@@ -13,7 +13,6 @@ import (
 
 var (
 	validate             = validator.New()
-	qualtricsIDRegex     = regexp.MustCompile("^[0-9a-zA-Z]{11,15}$")
 	absoluteURLPathRegex = regexp.MustCompile("^/.*$")
 	translator           ut.Translator
 )
@@ -21,7 +20,6 @@ var (
 func init() {
 	setupTranslations()
 	transformToJSONNamespaces()
-	RegisterValidator("qualtricsID", validateQualtricsID, "{0} must be a qualtrics GUID")
 	RegisterValidator("absoluteURLPath", validateAbsoluteURLPath, "{0} must be an absolute URL path")
 }
 
@@ -75,26 +73,4 @@ func RegisterValidator(name string, validatorFunc func(fl validator.FieldLevel) 
 func validateAbsoluteURLPath(fl validator.FieldLevel) bool {
 	val := fl.Field().String()
 	return absoluteURLPathRegex.MatchString(val)
-}
-
-func validateQualtricsID(fl validator.FieldLevel) bool {
-	if !fl.Field().IsValid() || fl.Field().Kind() != reflect.String {
-		return false
-	}
-	param := fl.Param()
-	if len(param) == 0 {
-		return false
-	}
-	validPrefixes := strings.Split(param, ";")
-	val := fl.Field().String()
-	for _, prefix := range validPrefixes {
-		if len(prefix) == 0 {
-			continue
-		}
-		prefix = prefix + "_"
-		if len(prefix) < len(val) && val[:len(prefix)] == prefix {
-			return qualtricsIDRegex.MatchString(val[len(prefix):])
-		}
-	}
-	return false
 }
