@@ -8,9 +8,8 @@ import (
 
 // Errors used in various places in the project
 var (
-	ErrMissingAuthenticatedIDs = errors.New("missing authenticated ids")
-	ErrMissingRequestBody      = errors.New("missing request body")
-	ErrMissingRequestQuery     = errors.New("missing request query")
+	ErrMissingRequestBody  = errors.New("missing request body")
+	ErrMissingRequestQuery = errors.New("missing request query")
 )
 
 // Special error types that know which HTTP StatusCode to respond with

@@ -2,7 +2,6 @@ package httputil
 
 import (
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/go-playground/locales/en"
@@ -12,15 +11,13 @@ import (
 )
 
 var (
-	validate             = validator.New()
-	absoluteURLPathRegex = regexp.MustCompile("^/.*$")
-	translator           ut.Translator
+	validate   = validator.New()
+	translator ut.Translator
 )
 
 func init() {
 	setupTranslations()
 	transformToJSONNamespaces()
-	RegisterValidator("absoluteURLPath", validateAbsoluteURLPath, "{0} must be an absolute URL path")
 }
 
 func transformToJSONNamespaces() {
@@ -68,9 +65,4 @@ func RegisterValidator(name string, validatorFunc func(fl validator.FieldLevel) 
 		t, _ := ut.T(name, fe.Field())
 		return t
 	})
-}
-
-func validateAbsoluteURLPath(fl validator.FieldLevel) bool {
-	val := fl.Field().String()
-	return absoluteURLPathRegex.MatchString(val)
 }
