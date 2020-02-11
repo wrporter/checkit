@@ -7,6 +7,7 @@ import (
 	"github.com/wrporter/games-app/server/internal/env"
 	"github.com/wrporter/games-app/server/internal/server"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
+	"github.com/wrporter/games-app/server/internal/server/limit"
 	"github.com/wrporter/games-app/server/internal/server/session"
 	"github.com/wrporter/games-app/server/internal/server/store"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,14 +33,18 @@ var (
 func RegisterRoutes(server *server.Server) {
 	server.Router.POST("/api/google/login", httputil.Adapt(
 		Login(server.Store, server.SessionManager.Manager),
+		limit.WithRateLimit(),
 		httputil.ValidateRequestJSON(session.OAuthSession{}),
 	))
 
 	server.Router.POST("/api/logout", httputil.Adapt(
 		Logout(server.SessionManager),
+		limit.WithRateLimit(),
 		WithAuth(server.SessionManager.Manager)))
 
-	server.Router.GET("/api/user", GetUser(server.SessionManager))
+	server.Router.GET("/api/user", httputil.Adapt(
+		GetUser(server.SessionManager),
+		limit.WithRateLimit()))
 
 	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))
 }
@@ -130,12 +135,12 @@ func Login(store store.Store, sessionManager *scs.SessionManager) httprouter.Han
 }
 
 func WithAuth(sessionManager *scs.SessionManager) httputil.Adapter {
-	return func(handle httprouter.Handle) httprouter.Handle {
+	return func(next httprouter.Handle) httprouter.Handle {
 		return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 			if auth := sessionManager.Get(request.Context(), session.ContextKey); auth == nil {
 				httputil.RespondWithError(writer, request, httputil.ErrHTTPUnauthorized("401 Unauthorized"))
 			} else {
-				handle(writer, request, params)
+				next(writer, request, params)
 			}
 		}
 	}

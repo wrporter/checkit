@@ -6,6 +6,7 @@ import (
 	"github.com/wrporter/games-app/server/internal/server"
 	"github.com/wrporter/games-app/server/internal/server/auth"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
+	"github.com/wrporter/games-app/server/internal/server/limit"
 	"github.com/wrporter/games-app/server/internal/server/session"
 	"github.com/wrporter/games-app/server/internal/server/store"
 	"net/http"
@@ -33,15 +34,18 @@ type (
 func RegisterRoutes(s *server.Server) {
 	s.Router.GET("/api/items", httputil.Adapt(
 		GetItems(s),
+		limit.WithRateLimit(),
 		auth.WithAuth(s.SessionManager.Manager),
 	))
 	s.Router.POST("/api/items", httputil.Adapt(
 		PostItem(s),
+		limit.WithRateLimit(),
 		auth.WithAuth(s.SessionManager.Manager),
 		httputil.ValidateRequestJSON(ItemRequest{}),
 	))
 	s.Router.POST(fmt.Sprintf("/api/items/:%s", ParamItemID), httputil.Adapt(
 		UpdateItemStatus(s),
+		limit.WithRateLimit(),
 		auth.WithAuth(s.SessionManager.Manager),
 		httputil.ValidateRequestJSON(ItemUpdateStatusRequest{}),
 	))

@@ -27,9 +27,7 @@ const useStyles = makeStyles(theme => ({
         color: theme.palette.text.primary,
     },
     content: {
-        backgroundColor: '#f3f3f3',
         padding: 32,
-        height: 'calc(100vh - 65px)',
     },
     menuButton: {
         marginRight: theme.spacing(2),

@@ -15,7 +15,7 @@ import (
 )
 
 type (
-	httpError struct {
+	HTTPError struct {
 		// HTTP status code.
 		//
 		// Example: 400
@@ -68,7 +68,7 @@ func RespondWithError(writer http.ResponseWriter, request *http.Request, err err
 	// TODO be helpful and attach the failure mode to the access log
 	// accesslog.Set(request.Context(), "failure", err.Error())
 
-	response := httpError{500, "Internal Server Error", time.Now(), nil}
+	response := HTTPError{500, "Internal Server Error", time.Now(), nil}
 
 	// switch on error value
 	switch err {
