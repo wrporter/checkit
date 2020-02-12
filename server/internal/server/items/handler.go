@@ -43,12 +43,28 @@ func RegisterRoutes(s *server.Server) {
 		auth.WithAuth(s.SessionManager.Manager),
 		httputil.ValidateRequestJSON(ItemRequest{}),
 	))
+	s.Router.DELETE("/api/items/completed", httputil.Adapt(
+		DeleteCompletedItems(s),
+		limit.WithRateLimit(),
+		auth.WithAuth(s.SessionManager.Manager),
+	))
 	s.Router.POST(fmt.Sprintf("/api/items/:%s", ParamItemID), httputil.Adapt(
 		UpdateItemStatus(s),
 		limit.WithRateLimit(),
 		auth.WithAuth(s.SessionManager.Manager),
 		httputil.ValidateRequestJSON(ItemUpdateStatusRequest{}),
 	))
+}
+
+func DeleteCompletedItems(s *server.Server) httprouter.Handle {
+	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
+		sess := session.Get(s.SessionManager, request.Context())
+		err := s.Store.DeleteCompletedItems(sess.User.ID)
+		if err != nil {
+			httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError(err.Error()))
+		}
+		writer.WriteHeader(http.StatusNoContent)
+	}
 }
 
 func UpdateItemStatus(s *server.Server) httprouter.Handle {

@@ -33,3 +33,9 @@ export function updateItemStatus(itemId, status) {
 export function getItems() {
     return fetch('/api/items').then(response => response.json());
 }
+
+export function deleteCompletedItems() {
+    return fetch('/api/items/completed', {
+        method: 'DELETE',
+    });
+}

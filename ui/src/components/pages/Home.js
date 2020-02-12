@@ -7,19 +7,26 @@ import * as itemService from '../items/ItemService';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useAsync } from 'react-async';
 import Item from '../items/Item';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
+import List from '@material-ui/core/List';
+import Controls from './Controls';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
     input: {
         marginTop: 12,
         marginBottom: 24,
+    },
+    controls: {
+        position: 'absolute',
+        '&.MuiSpeedDial-directionUp': {
+            bottom: theme.spacing(4),
+            right: theme.spacing(4),
+        },
     },
 }));
 
 export default function Home() {
     const classes = useStyles();
-    const [hideCompleted, setHideCompleted] = React.useState(true);
+    const [showCompleted, setShowCompleted] = React.useState(false);
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState([]);
@@ -45,9 +52,21 @@ export default function Home() {
         setValue(e.target.value);
     };
 
+    const handleShowCompletedChange = value => {
+        setShowCompleted(value);
+    };
+    const handleDeleteCompleted = () => {
+        const incompleteItems = items.filter(item => !item.dateCompleted);
+        setItems(incompleteItems);
+    };
+    const handleItemChange = (itemId, dateCompleted) => {
+        items.find(item => item.id === itemId).dateCompleted = dateCompleted;
+        setItems(items);
+    };
+
     return (
         <Box>
-            <Typography variant="h2">Get stuff done!</Typography>
+            <Typography variant="h4">Get stuff done!</Typography>
             <TextField
                 label="What do you want to do?"
                 fullWidth
@@ -56,19 +75,12 @@ export default function Home() {
                 onChange={handleChange}
                 className={classes.input}
             />
+
             {saveError ? (
                 <Typography style={{ color: 'red' }}>{saveError}</Typography>
             ) : null}
-            <FormControlLabel
-                control={
-                    <Switch
-                        checked={hideCompleted}
-                        onChange={e => setHideCompleted(e.target.checked)}
-                    />
-                }
-                label="Hide completed items"
-            />
-            <Box>
+
+            <List>
                 {isPending ? (
                     <CircularProgress />
                 ) : error ? (
@@ -80,11 +92,19 @@ export default function Home() {
                             id={item.id}
                             text={item.text}
                             dateCompleted={item.dateCompleted}
-                            hideCompleted={hideCompleted}
+                            showCompleted={showCompleted}
+                            onChange={handleItemChange}
                         />
                     ))
                 ) : null}
-            </Box>
+            </List>
+
+            <Controls
+                className={classes.controls}
+                showCompleted={showCompleted}
+                onShowCompletedChange={handleShowCompletedChange}
+                onDeleteCompleted={handleDeleteCompleted}
+            />
         </Box>
     );
 }

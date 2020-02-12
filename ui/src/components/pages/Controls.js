@@ -1,0 +1,97 @@
+import React from 'react';
+import SpeedDial from '@material-ui/lab/SpeedDial';
+import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
+import SettingsIcon from '@material-ui/icons/Settings';
+import CloseIcon from '@material-ui/icons/Close';
+import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
+import DeleteSweepIcon from '@material-ui/icons/DeleteSweep';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import * as itemService from '../items/ItemService';
+import { Snackbar } from '@material-ui/core';
+
+export default function Controls({
+    className,
+    showCompleted,
+    onShowCompletedChange,
+    onDeleteCompleted,
+}) {
+    const [open, setOpen] = React.useState(false);
+    const [deleteError, setDeleteError] = React.useState('');
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+    const handleOpen = () => {
+        setOpen(true);
+    };
+    const handleShowCompletedClick = () => {
+        handleClose();
+        onShowCompletedChange(!showCompleted);
+    };
+    const handleDeleteCompletedItems = () => {
+        handleClose();
+        itemService.deleteCompletedItems().then(response => {
+            if (response.status >= 400) {
+                setDeleteError(
+                    'Failed to delete completed items. Please try again.'
+                );
+            } else {
+                onDeleteCompleted();
+            }
+        });
+    };
+
+    const handleDeleteErrorClose = () => {
+        setDeleteError('');
+    };
+
+    function getShowTitle() {
+        return showCompleted ? 'Hide Completed Items' : 'Show Completed Items';
+    }
+
+    return (
+        <>
+            <SpeedDial
+                className={className}
+                icon={
+                    <SpeedDialIcon
+                        icon={<SettingsIcon />}
+                        openIcon={<CloseIcon />}
+                    />
+                }
+                open={open}
+                onClose={handleClose}
+                onOpen={handleOpen}
+                direction="up"
+                ariaLabel="Controls"
+            >
+                <SpeedDialAction
+                    icon={<DeleteSweepIcon />}
+                    title="Delete Completed Items"
+                    tooltipTitle="Delete Completed Items"
+                    onClick={handleDeleteCompletedItems}
+                />
+                <SpeedDialAction
+                    icon={
+                        showCompleted ? (
+                            <VisibilityIcon />
+                        ) : (
+                            <VisibilityOffIcon />
+                        )
+                    }
+                    title={getShowTitle()}
+                    tooltipTitle={getShowTitle()}
+                    onClick={handleShowCompletedClick}
+                />
+            </SpeedDial>
+
+            <Snackbar
+                open={!!deleteError}
+                message={deleteError}
+                autoHideDuration={5000}
+                onClose={handleDeleteErrorClose}
+            />
+        </>
+    );
+}

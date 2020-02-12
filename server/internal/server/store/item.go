@@ -115,3 +115,9 @@ func (s *MongoStore) UpdateItemStatus(userID primitive.ObjectID, itemID string, 
 	}
 	return nil
 }
+
+func (s *MongoStore) DeleteCompletedItems(userID primitive.ObjectID) error {
+	collection := s.client.Database("checkit").Collection("items")
+	_, err := collection.DeleteMany(context.TODO(), bson.M{"userId": userID, "dateCompleted": bson.M{"$ne": nil}})
+	return err
+}

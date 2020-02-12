@@ -7,18 +7,16 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Avatar from '@material-ui/core/Avatar';
 import logo from './logo-32x32.png';
+import Paper from '@material-ui/core/Paper';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     container: {
-        backgroundColor: '#e9faff',
+        background:
+            'linear-gradient(50deg, rgba(144,201,120,1) 0%, rgba(175,213,170,1) 33%, rgba(131,198,221,1) 66%, rgba(93,177,209,1) 100%);',
     },
     form: {
         padding: '60px 0',
-        backgroundColor: theme.palette.background.default,
-        borderRadius: 4,
         width: 400,
-
-        boxShadow: '0 3px 20px 0px rgba(0, 0, 0, 0.1)',
     },
     title: {
         marginBottom: 24,
@@ -35,30 +33,32 @@ export default function UnauthenticatedApp() {
 
     return (
         <FullPageContainer className={classes.container}>
-            <Grid container className={classes.form}>
-                <Grid container justify="center" spacing={1}>
-                    <Grid item>
-                        <Avatar variant="square" src={logo} />
+            <Paper elevation={5}>
+                <Grid container className={classes.form}>
+                    <Grid container justify="center" spacing={1}>
+                        <Grid item>
+                            <Avatar variant="square" src={logo} />
+                        </Grid>
+                        <Grid item>
+                            <Typography
+                                variant="h4"
+                                component="h1"
+                                className={classes.title}
+                            >
+                                Checkit
+                            </Typography>
+                        </Grid>
                     </Grid>
-                    <Grid item>
-                        <Typography
-                            variant="h4"
-                            component="h1"
-                            className={classes.title}
-                        >
-                            Checkit
-                        </Typography>
-                    </Grid>
-                </Grid>
 
-                <Grid container justify="center">
-                    <GoogleLogin
-                        clientId={window.RESOURCES.GOOGLE_CLIENT_ID}
-                        onSuccess={login}
-                        onFailure={failureCallback}
-                    />
+                    <Grid container justify="center">
+                        <GoogleLogin
+                            clientId={window.RESOURCES.GOOGLE_CLIENT_ID}
+                            onSuccess={login}
+                            onFailure={failureCallback}
+                        />
+                    </Grid>
                 </Grid>
-            </Grid>
+            </Paper>
         </FullPageContainer>
     );
 }
