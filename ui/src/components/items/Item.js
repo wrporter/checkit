@@ -40,9 +40,9 @@ export default function Item({
             .updateItemStatus(id, checked ? 'Complete' : 'Incomplete')
             .then(() => {
                 if (checked) {
-                    onChange(new Date().toISOString());
+                    onChange(id, new Date().toISOString());
                 } else {
-                    onChange();
+                    onChange(id);
                 }
             })
             .catch(err => {
@@ -56,6 +56,7 @@ export default function Item({
     };
 
     if (showCompleted || !checked) {
+        // TODO Add animation for removing items
         return (
             <ListItem
                 dense

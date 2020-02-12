@@ -16,6 +16,7 @@ const useStyles = makeStyles(theme => ({
 export default function Profile() {
     const user = useUser();
     const classes = useStyles();
+    // TODO Add statistics to user profile of how many items they've completed and when, etc. A graph?
 
     return (
         <Box>

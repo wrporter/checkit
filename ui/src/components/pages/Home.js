@@ -60,6 +60,7 @@ export default function Home() {
         setItems(incompleteItems);
     };
     const handleItemChange = (itemId, dateCompleted) => {
+        // TODO Clean this up. This logic of mutating a value within the items list is a hack.
         items.find(item => item.id === itemId).dateCompleted = dateCompleted;
         setItems(items);
     };

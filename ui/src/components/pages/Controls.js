@@ -25,10 +25,13 @@ export default function Controls({
     const handleOpen = () => {
         setOpen(true);
     };
+
+    // TODO Persist user preference for showing completed items
     const handleShowCompletedClick = () => {
         handleClose();
         onShowCompletedChange(!showCompleted);
     };
+
     const handleDeleteCompletedItems = () => {
         handleClose();
         itemService.deleteCompletedItems().then(response => {
