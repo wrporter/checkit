@@ -32,8 +32,15 @@ const useStyles = makeStyles(theme => ({
     menuButton: {
         marginRight: theme.spacing(2),
     },
-    title: {
+    divider: {
         flexGrow: 1,
+    },
+    homeLink: {
+        display: 'flex',
+        padding: '8px 12px 8px 0',
+        textDecoration: 'none',
+        color: theme.palette.text.primary,
+        alignItems: 'center',
     },
     logo: {
         marginRight: theme.spacing(2),
@@ -74,12 +81,17 @@ export default function AuthenticatedApp() {
             <div className={classes.root}>
                 <AppBar position="static" className={classes.bar}>
                     <Toolbar>
-                        <Link to="/" className={classes.logo}>
-                            <Avatar variant="square" src={logo} />
+                        <Link to="/" className={classes.homeLink}>
+                            <Avatar
+                                variant="square"
+                                src={logo}
+                                className={classes.logo}
+                            />
+                            <Typography variant="h6">Checkit</Typography>
                         </Link>
-                        <Typography variant="h6" className={classes.title}>
-                            Checkit
-                        </Typography>
+
+                        <Box className={classes.divider} />
+
                         <Button
                             ref={anchorRef}
                             onClick={handleAccountMenuClick}
