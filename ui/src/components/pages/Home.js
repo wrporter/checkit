@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
         marginBottom: 24,
     },
     controls: {
-        position: 'absolute',
+        position: 'fixed',
         '&.MuiSpeedDial-directionUp': {
             bottom: theme.spacing(4),
             right: theme.spacing(4),

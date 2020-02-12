@@ -7,6 +7,7 @@ import { Snackbar } from '@material-ui/core';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Collapse from '@material-ui/core/Collapse';
 
 const useStyles = makeStyles(theme => ({
     checked: {
@@ -55,9 +56,8 @@ export default function Item({
         setError('');
     };
 
-    if (showCompleted || !checked) {
-        // TODO Add animation for removing items
-        return (
+    return (
+        <Collapse in={showCompleted || !checked}>
             <ListItem
                 dense
                 button
@@ -82,8 +82,6 @@ export default function Item({
                     onClose={handleErrorClose}
                 />
             </ListItem>
-        );
-    }
-
-    return null;
+        </Collapse>
+    );
 }

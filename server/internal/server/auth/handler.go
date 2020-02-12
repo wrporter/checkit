@@ -49,7 +49,6 @@ func RegisterRoutes(server *server.Server) {
 	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))
 }
 
-// TODO store the session token on the session object
 func Keepalive(sessionManager *session.Manager) httprouter.Handle {
 	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
 		sess := session.Get(sessionManager, request.Context())
