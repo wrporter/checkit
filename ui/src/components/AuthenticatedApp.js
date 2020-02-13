@@ -68,12 +68,19 @@ export default function AuthenticatedApp() {
         logout();
     };
 
-    React.useEffect(() => {
+    function checkSessionEnd() {
         const ws = new WebSocket(
             `wss://${document.location.host}/api/keepalive`
         );
-        // TODO: This should not happen on close, but on an event sent from the server. This is not necessarily when the session ends, especially when we switch to persistent sessions.
-        ws.onclose = reload;
+        ws.onmessage = event => {
+            if (event.data === 'session_end') {
+                reload();
+            }
+        };
+    }
+
+    React.useEffect(() => {
+        checkSessionEnd();
     }, []);
 
     return (

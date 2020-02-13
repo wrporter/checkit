@@ -73,8 +73,12 @@ func Keepalive(sessionManager *session.Manager) httprouter.Handle {
 
 		select {
 		case <-client.Delete:
+			err = conn.WriteMessage(websocket.TextMessage, []byte("session_end"))
 			log.Printf("Session expired for user %s", sess.User.ID.Hex())
 			sessionManager.Hub.Unregister <- cookie.Value
+			if err != nil {
+				log.Printf("Failed to send session end message: %v", err)
+			}
 		}
 	}
 }
