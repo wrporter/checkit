@@ -9,6 +9,15 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
 import * as itemService from '../items/ItemService';
 import { Snackbar } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles(theme => ({
+    tooltip: {
+        whiteSpace: 'nowrap',
+        backgroundColor: 'rgba(97, 97, 97, 0.9)',
+        color: '#ffffff',
+    },
+}));
 
 export default function Controls({
     className,
@@ -16,6 +25,7 @@ export default function Controls({
     onShowCompletedChange,
     onDeleteCompleted,
 }) {
+    const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [deleteError, setDeleteError] = React.useState('');
 
@@ -74,6 +84,8 @@ export default function Controls({
                     title="Delete Completed Items"
                     tooltipTitle="Delete Completed Items"
                     onClick={handleDeleteCompletedItems}
+                    tooltipOpen={true}
+                    classes={{ staticTooltipLabel: classes.tooltip }}
                 />
                 <SpeedDialAction
                     icon={
@@ -86,6 +98,8 @@ export default function Controls({
                     title={getShowTitle()}
                     tooltipTitle={getShowTitle()}
                     onClick={handleShowCompletedClick}
+                    tooltipOpen={true}
+                    classes={{ staticTooltipLabel: classes.tooltip }}
                 />
             </SpeedDial>
 
