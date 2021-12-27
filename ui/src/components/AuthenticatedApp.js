@@ -97,16 +97,16 @@ export default function AuthenticatedApp() {
                             <Typography variant="h6">Checkit</Typography>
                         </Link>
 
-                        <Box className={classes.divider} />
+                        <Box className={classes.divider}/>
 
                         <Button
                             ref={anchorRef}
                             onClick={handleAccountMenuClick}
                             className={classes.accountButton}
                             startIcon={
-                                <Avatar alt={user.name} src={user.imageUrl} />
+                                <Avatar alt={user.name} src={user.imageUrl}/>
                             }
-                            endIcon={<ArrowDropDownIcon />}
+                            endIcon={<ArrowDropDownIcon/>}
                         >
                             <Typography>{user.name}</Typography>
                         </Button>
@@ -142,10 +142,10 @@ export default function AuthenticatedApp() {
                 <Box className={classes.content}>
                     <Switch>
                         <Route path="/profile">
-                            <Profile />
+                            <Profile/>
                         </Route>
                         <Route path="/">
-                            <Home />
+                            <Home/>
                         </Route>
                     </Switch>
                 </Box>

@@ -35,7 +35,7 @@ export default function UnauthenticatedApp() {
         <FullPageContainer className={classes.container}>
             <Paper elevation={5}>
                 <Grid container className={classes.form}>
-                    <Grid container justify="center" spacing={1}>
+                    <Grid container justifyContent="center" spacing={1}>
                         <Grid item>
                             <Avatar variant="square" src={logo} />
                         </Grid>
@@ -50,9 +50,9 @@ export default function UnauthenticatedApp() {
                         </Grid>
                     </Grid>
 
-                    <Grid container justify="center">
+                    <Grid container justifyContent="center">
                         <GoogleLogin
-                            clientId={window.RESOURCES.GOOGLE_CLIENT_ID}
+                            clientId={process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID}
                             onSuccess={login}
                             onFailure={failureCallback}
                         />

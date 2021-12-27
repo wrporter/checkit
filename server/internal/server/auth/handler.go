@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
@@ -111,6 +112,8 @@ func GetUser(sessionManager *session.Manager) httprouter.Handle {
 func Login(store store.Store, sessionManager *scs.SessionManager) httprouter.Handle {
 	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 		body := httputil.GetRequestBody(req).(*session.OAuthSession)
+
+		fmt.Println(body)
 
 		u, err := store.GetUserByEmail(body.User.Email)
 		var id string

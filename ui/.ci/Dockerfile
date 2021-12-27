@@ -8,7 +8,7 @@ RUN apk add --no-cache nodejs nodejs-npm
 
 WORKDIR /src
 
-ARG GOOGLE_OAUTH_CLIENT_ID
+ARG REACT_APP_GOOGLE_OAUTH_CLIENT_ID
 
 COPY package*.json ./
 RUN npm ci --loglevel=warn

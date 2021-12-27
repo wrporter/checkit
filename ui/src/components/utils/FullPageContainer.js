@@ -22,7 +22,7 @@ export default function FullPageContainer({ children, className }) {
             container
             spacing={0}
             alignItems="center"
-            justify="center"
+            justifyContent="center"
         >
             {children}
         </Grid>
