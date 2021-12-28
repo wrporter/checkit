@@ -66,6 +66,7 @@ export default function Controls({
     return (
         <>
             <SpeedDial
+                data-testid="Home.Controls"
                 className={className}
                 icon={
                     <SpeedDialIcon
@@ -80,6 +81,7 @@ export default function Controls({
                 ariaLabel="Controls"
             >
                 <SpeedDialAction
+                    data-testid="Home.Controls.Delete"
                     icon={<DeleteSweepIcon />}
                     title="Delete Completed Items"
                     tooltipTitle="Delete Completed Items"
@@ -88,6 +90,8 @@ export default function Controls({
                     classes={{ staticTooltipLabel: classes.tooltip }}
                 />
                 <SpeedDialAction
+                    data-testid="Home.Controls.ShowHide"
+                    data-showcompleted={showCompleted}
                     icon={
                         showCompleted ? (
                             <VisibilityIcon />

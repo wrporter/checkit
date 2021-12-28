@@ -32,8 +32,8 @@ export default function Profile() {
                 <Grid item container xs={12} sm alignItems="center">
                     <Grid item xs container direction="column" spacing={2}>
                         <Grid item xs>
-                            <Typography variant="h6">{user.name}</Typography>
-                            <Typography>{user.email}</Typography>
+                            <Typography data-testid="Profile.Name" variant="h6">{user.name}</Typography>
+                            <Typography data-testid="Profile.Email">{user.email}</Typography>
                         </Grid>
                     </Grid>
                 </Grid>

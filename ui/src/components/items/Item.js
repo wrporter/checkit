@@ -59,6 +59,8 @@ export default function Item({
     return (
         <Collapse in={showCompleted || !checked}>
             <ListItem
+                data-testid={`Home.Item.${id}`}
+                data-checked={checked}
                 dense
                 button
                 onClick={handleToggle(!checked)}
