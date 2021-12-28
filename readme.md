@@ -27,3 +27,10 @@ The server is written in Golang with MongoDB storage.
 - Add ability to delete all completed items.
 - Add limits of how many items a user can have so someone doesn't take down my server 😆.
 - Add rate limiting for requests.
+
+## Deployment
+
+1. Get the OAuth key and secret from the [Google Cloud Platform](https://console.cloud.google.com/apis/credentials?authuser=1&project=test-oauth2-266303&supportedpurview=project)
+    - Insert the key and secret into [.ci/docker-compose.yml](.ci/docker-compose.yml)
+    - Add the key and secret to your environment under `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET`
+2. Run `.ci/deploy.sh`

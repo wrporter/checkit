@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 
+PARENT_APP="checkit"
 APP_NAME="checkit-api"
 PORT="9000"
+
+BASE_DIRECTORY="/volume1/docker/"
+SSH_USER="wesp"
+SSH_HOST="roshar"
+DOCKER_REGISTRY="192.168.1.222:5555"
 
 DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL:-}"
 IMAGE_PATH="${IMAGE_PATH:-${APP_NAME}}"

@@ -29,4 +29,4 @@ services:
     image: mongo
     restart: unless-stopped
     volumes:
-      - /home/x-wing/www/checkit/mongo:/data/db
+      - /volume1/docker/checkit/mongo:/data/db

@@ -2,8 +2,6 @@
 !.ci/Caddyfile
 !public
 !src
-!.babelrc
-!.eslintrc.yml
+!tsconfig.json
 !package.json
 !package-lock.json
-!webpack.config.js

@@ -69,6 +69,7 @@ export default function Home() {
         <Box>
             <Typography variant="h4">Get stuff done!</Typography>
             <TextField
+                data-testid="Home.AddItemTextBox"
                 label="What do you want to do?"
                 fullWidth
                 inputProps={{ onKeyDown: handleKeyDown }}
