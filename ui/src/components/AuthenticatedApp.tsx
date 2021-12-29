@@ -1,20 +1,20 @@
 import React from 'react';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import Profile from './pages/Profile';
 import Home from './pages/Home';
-import { makeStyles } from '@material-ui/core/styles';
-import Avatar from '@material-ui/core/Avatar';
+import makeStyles from '@mui/styles/makeStyles';
+import Avatar from '@mui/material/Avatar';
 import { useUser } from './authentication/UserContext';
-import Button from '@material-ui/core/Button';
+import Button from '@mui/material/Button';
 import { useAuthentication } from './authentication/AuthenticationContext';
-import { Menu } from '@material-ui/core';
-import MenuItem from '@material-ui/core/MenuItem';
-import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
+import { Menu } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import logo from './logo-32x32.png';
-import Box from '@material-ui/core/Box';
+import Box from '@mui/material/Box';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -55,20 +55,20 @@ export default function AuthenticatedApp() {
     const user = useUser();
     const { logout, reload } = useAuthentication();
 
-    const [open, setOpen] = React.useState(false);
-    const anchorRef = React.useRef();
-    const handleAccountMenuClick = () => {
-        setOpen(!open);
+    const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
+    const open = Boolean(anchorEl);
+    const handleAccountMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
-        setOpen(false);
+        setAnchorEl(null);
     };
     const handleLogoutClick = () => {
         handleClose();
         logout();
     };
 
-    function checkSessionEnd() {
+    const checkSessionEnd = React.useCallback(() => {
         const ws = new WebSocket(
             `wss://${document.location.host}/api/keepalive`
         );
@@ -77,11 +77,11 @@ export default function AuthenticatedApp() {
                 reload();
             }
         };
-    }
+    }, [reload]);
 
     React.useEffect(() => {
         checkSessionEnd();
-    }, []);
+    }, [checkSessionEnd]);
 
     return (
         <BrowserRouter>
@@ -105,7 +105,6 @@ export default function AuthenticatedApp() {
 
                         <Button
                             data-testid="AccountMenu"
-                            buttonRef={anchorRef}
                             onClick={handleAccountMenuClick}
                             className={classes.accountButton}
                             startIcon={
@@ -116,11 +115,10 @@ export default function AuthenticatedApp() {
                             <Typography>{user.name}</Typography>
                         </Button>
                         <Menu
-                            anchorEl={anchorRef.current}
+                            anchorEl={anchorEl}
                             keepMounted
                             open={open}
                             onClose={handleClose}
-                            getContentAnchorEl={null}
                             anchorOrigin={{
                                 vertical: 'bottom',
                                 horizontal: 'left',

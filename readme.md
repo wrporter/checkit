@@ -34,3 +34,20 @@ The server is written in Golang with MongoDB storage.
     - Insert the key and secret into [.ci/docker-compose.yml](.ci/docker-compose.yml)
     - Add the key and secret to your environment under `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET`
 2. Run `.ci/deploy.sh`
+
+## E2E Testing
+
+The following `data-testid` attributes are maintained.
+
+- `LoginButton`
+- `Home`
+- `Home.AddItemTextBox`
+- `Home.Item.{id}`
+- `Home.Controls`
+- `Home.Controls.Delete`
+- `Home.Controls.ShowHide`
+- `AccountMenu`
+- `AccountMenu.Profile`
+- `AccountMenu.Logout`
+- `Profile.Name`
+- `Profile.Email`

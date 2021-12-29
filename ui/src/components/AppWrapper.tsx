@@ -1,14 +1,20 @@
 import React from 'react';
-import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
-import { CssBaseline } from '@material-ui/core';
+import { createTheme, ThemeProvider, Theme, StyledEngineProvider, adaptV4Theme } from '@mui/material/styles';
+import { CssBaseline } from '@mui/material';
 import { AuthenticationProvider } from './authentication/AuthenticationContext';
 import App from './App';
 import { UserProvider } from './authentication/UserContext';
 
-const theme = createMuiTheme({
+
+declare module '@mui/styles/defaultTheme' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
+
+
+const theme = createTheme(adaptV4Theme({
     palette: {
         common: { black: '#000', white: '#fff' },
-        type: 'light',
         primary: {
             main: '#1976d2',
             light: 'rgb(71, 145, 219)',
@@ -67,7 +73,6 @@ const theme = createMuiTheme({
             primary: 'rgba(0, 0, 0, 0.87)',
             secondary: 'rgba(0, 0, 0, 0.54)',
             disabled: 'rgba(0, 0, 0, 0.38)',
-            hint: 'rgba(0, 0, 0, 0.38)',
         },
         divider: 'rgba(0, 0, 0, 0.12)',
         background: {
@@ -84,19 +89,21 @@ const theme = createMuiTheme({
             disabledBackground: 'rgba(0, 0, 0, 0.12)',
         },
     },
-});
+}));
 
 const AppWrapper = () => {
     return (
         <React.Fragment>
             <CssBaseline />
-            <ThemeProvider theme={theme}>
-                <AuthenticationProvider>
-                    <UserProvider>
-                        <App />
-                    </UserProvider>
-                </AuthenticationProvider>
-            </ThemeProvider>
+            <StyledEngineProvider injectFirst>
+                <ThemeProvider theme={theme}>
+                    <AuthenticationProvider>
+                        <UserProvider>
+                            <App />
+                        </UserProvider>
+                    </AuthenticationProvider>
+                </ThemeProvider>
+            </StyledEngineProvider>
         </React.Fragment>
     );
 };

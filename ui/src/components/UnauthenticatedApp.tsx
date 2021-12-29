@@ -2,14 +2,14 @@ import React from 'react';
 import GoogleLogin from 'react-google-login';
 import { useAuthentication } from './authentication/AuthenticationContext';
 import FullPageContainer from './utils/FullPageContainer';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Grid from '@material-ui/core/Grid';
-import Avatar from '@material-ui/core/Avatar';
+import makeStyles from '@mui/styles/makeStyles';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Avatar from '@mui/material/Avatar';
 import logo from './logo-32x32.png';
-import Paper from '@material-ui/core/Paper';
+import Paper from '@mui/material/Paper';
 import { ReactComponent as GoogleLogo } from './google-logo.svg';
-import Button from "@material-ui/core/Button";
+import Button from "@mui/material/Button";
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -75,7 +75,6 @@ export default function UnauthenticatedApp() {
 
                     <Grid container justifyContent="center">
                         <GoogleLogin
-                            data-testid="LoginButton"
                             clientId={process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID || ""}
                             onSuccess={login}
                             onFailure={failureCallback}

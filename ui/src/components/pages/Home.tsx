@@ -1,12 +1,12 @@
 import React from 'react';
-import Typography from '@material-ui/core/Typography';
-import { TextField } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import Box from '@material-ui/core/Box';
+import Typography from '@mui/material/Typography';
+import { TextField } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
+import Box from '@mui/material/Box';
 import * as itemService from '../items/ItemService';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress';
 import { useAsync } from 'react-async';
-import List from '@material-ui/core/List';
+import List from '@mui/material/List';
 import Controls from './Controls';
 import { Item as ItemType } from '../items/ItemService';
 import Item from '../items/Item';
@@ -73,10 +73,12 @@ export default function Home() {
         <Box>
             <Typography variant="h4">Get stuff done!</Typography>
             <TextField
-                data-testid="Home.AddItemTextBox"
                 label="What do you want to do?"
                 fullWidth
-                inputProps={{ onKeyDown: handleKeyDown }}
+                inputProps={{
+                    onKeyDown: handleKeyDown,
+                    'data-testid': "Home.AddItemTextBox"
+                }}
                 value={value}
                 onChange={handleChange}
                 className={classes.input}

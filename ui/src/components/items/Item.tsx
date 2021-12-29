@@ -1,13 +1,13 @@
 import React, { ChangeEventHandler } from 'react';
-import Checkbox from '@material-ui/core/Checkbox';
-import { makeStyles } from '@material-ui/core/styles';
+import Checkbox from '@mui/material/Checkbox';
+import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
 import * as itemService from './ItemService';
-import { Snackbar } from '@material-ui/core';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Collapse from '@material-ui/core/Collapse';
+import { Snackbar } from '@mui/material';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import Collapse from '@mui/material/Collapse';
 
 const useStyles = makeStyles(theme => ({
     checked: {

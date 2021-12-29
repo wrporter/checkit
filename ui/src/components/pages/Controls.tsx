@@ -1,15 +1,15 @@
 import React from 'react';
-import SpeedDial from '@material-ui/lab/SpeedDial';
-import SpeedDialIcon from '@material-ui/lab/SpeedDialIcon';
-import SettingsIcon from '@material-ui/icons/Settings';
-import CloseIcon from '@material-ui/icons/Close';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import DeleteSweepIcon from '@material-ui/icons/DeleteSweep';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import VisibilityOffIcon from '@material-ui/icons/VisibilityOff';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import SettingsIcon from '@mui/icons-material/Settings';
+import CloseIcon from '@mui/icons-material/Close';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import * as itemService from '../items/ItemService';
-import { Snackbar } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Snackbar } from '@mui/material';
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles(theme => ({
     tooltip: {
