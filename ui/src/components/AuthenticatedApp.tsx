@@ -69,8 +69,9 @@ export default function AuthenticatedApp() {
     };
 
     const checkSessionEnd = React.useCallback(() => {
+        const protocol = process.env.NODE_ENV === 'production' ? 'wss' : 'ws';
         const ws = new WebSocket(
-            `wss://${document.location.host}/api/keepalive`
+            `${protocol}://${document.location.host}/api/keepalive`
         );
         ws.onmessage = event => {
             if (event.data === 'session_end') {

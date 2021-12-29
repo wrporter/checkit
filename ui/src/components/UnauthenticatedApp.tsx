@@ -10,6 +10,7 @@ import logo from './logo-32x32.png';
 import Paper from '@mui/material/Paper';
 import { ReactComponent as GoogleLogo } from './google-logo.svg';
 import Button from "@mui/material/Button";
+import { red } from '@mui/material/colors';
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -23,21 +24,15 @@ const useStyles = makeStyles(() => ({
     title: {
         marginBottom: 24,
     },
-    login: {
+    loginButton: {
         width: '100%',
-        borderRadius: 4,
-        height: 40,
         backgroundColor: '#fff',
-        border: '1px solid #dfdfe8',
-        display: 'flex',
-        alignItems: 'center',
-        // justifyContent: 'space-between',
-        justifyContent: 'center',
-        padding: 12,
+        border: '1px solid #999',
         color: '#242428',
-        userSelect: 'none',
-        fontWeight: 'bold',
-        fontSize: 14,
+    },
+    loginError: {
+        marginTop: 8,
+        color: red['900'],
     },
     loginLogo: {
         height: 24,
@@ -49,9 +44,11 @@ const useStyles = makeStyles(() => ({
 export default function UnauthenticatedApp() {
     const { login } = useAuthentication();
     const classes = useStyles();
+    const [loginError, setLoginError] = React.useState('');
 
     const failureCallback = (response: any) => {
         console.log(response);
+        setLoginError("Login failed, please try again.")
     };
 
     return (
@@ -83,13 +80,19 @@ export default function UnauthenticatedApp() {
                                     data-testid="LoginButton"
                                     onClick={renderProps.onClick}
                                     disabled={renderProps.disabled}
-                                    className={classes.login}
-                                    startIcon={<GoogleLogo className={classes.loginLogo} />}
+                                    className={classes.loginButton}
+                                    startIcon={<GoogleLogo className={classes.loginLogo}/>}
                                 >
-                                    <Typography style={{textTransform: 'none'}}>Sign in with Google</Typography>
+                                    <Typography style={{ textTransform: 'none' }}>Sign in with Google</Typography>
                                 </Button>
                             )}
                         />
+
+                        {loginError && <Typography
+                            className={classes.loginError}
+                        >
+                            {loginError}
+                        </Typography>}
                     </Grid>
                 </Grid>
             </Paper>
