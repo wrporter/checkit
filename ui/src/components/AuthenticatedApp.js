@@ -2,7 +2,7 @@ import React from 'react';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-import { BrowserRouter, Link, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import Profile from './pages/Profile';
 import Home from './pages/Home';
 import { makeStyles } from '@material-ui/core/styles';
@@ -149,14 +149,10 @@ export default function AuthenticatedApp() {
                 </AppBar>
 
                 <Box className={classes.content}>
-                    <Switch>
-                        <Route path="/profile">
-                            <Profile/>
-                        </Route>
-                        <Route path="/">
-                            <Home/>
-                        </Route>
-                    </Switch>
+                    <Routes>
+                        <Route exact path="/" element={<Home />} />
+                        <Route path="/profile" element={<Profile />} />
+                    </Routes>
                 </Box>
             </div>
         </BrowserRouter>
