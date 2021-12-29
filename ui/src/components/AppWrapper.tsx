@@ -30,13 +30,13 @@ const queryClient = new QueryClient({
 const AppWrapper = () => {
     return (
         <React.Fragment>
-            <CssBaseline/>
+            <CssBaseline />
             <StyledEngineProvider injectFirst>
                 <ThemeProvider theme={theme}>
                     <QueryClientProvider client={queryClient}>
                         <AuthenticationProvider>
                             <UserProvider>
-                                <App/>
+                                <App />
                             </UserProvider>
                         </AuthenticationProvider>
                     </QueryClientProvider>

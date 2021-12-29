@@ -102,16 +102,16 @@ export default function AuthenticatedApp() {
                             <Typography variant="h6">Checkit</Typography>
                         </Link>
 
-                        <Box className={classes.divider}/>
+                        <Box className={classes.divider} />
 
                         <Button
                             data-testid="AccountMenu"
                             onClick={handleAccountMenuClick}
                             className={classes.accountButton}
                             startIcon={
-                                <Avatar alt={user.name} src={user.imageUrl}/>
+                                <Avatar alt={user.name} src={user.imageUrl} />
                             }
-                            endIcon={<ArrowDropDownIcon/>}
+                            endIcon={<ArrowDropDownIcon />}
                         >
                             <Typography>{user.name}</Typography>
                         </Button>

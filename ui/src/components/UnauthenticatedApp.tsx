@@ -57,7 +57,7 @@ export default function UnauthenticatedApp() {
                 <Grid container className={classes.form}>
                     <Grid container justifyContent="center" spacing={1}>
                         <Grid item>
-                            <Avatar variant="square" src={logo}/>
+                            <Avatar variant="square" src={logo} />
                         </Grid>
                         <Grid item>
                             <Typography
@@ -81,7 +81,7 @@ export default function UnauthenticatedApp() {
                                     onClick={renderProps.onClick}
                                     disabled={renderProps.disabled}
                                     className={classes.loginButton}
-                                    startIcon={<GoogleLogo className={classes.loginLogo}/>}
+                                    startIcon={<GoogleLogo className={classes.loginLogo} />}
                                 >
                                     <Typography style={{ textTransform: 'none' }}>Sign in with Google</Typography>
                                 </Button>

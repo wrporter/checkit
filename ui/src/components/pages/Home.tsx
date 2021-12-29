@@ -10,6 +10,7 @@ import Controls from './Controls';
 import { Item as ItemType } from '../items/ItemService';
 import Item from '../items/Item';
 import { useQuery } from 'react-query';
+import { useLocalStorage } from '../../context/useLocalStorage';
 
 const useStyles = makeStyles(theme => ({
     input: {
@@ -27,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function Home() {
     const classes = useStyles();
-    const [showCompleted, setShowCompleted] = React.useState(false);
+    const [showCompleted, setShowCompleted] = useLocalStorage('showCompleted', false)
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState<ItemType[]>([]);
@@ -92,7 +93,7 @@ export default function Home() {
 
             <List>
                 {isLoading ? (
-                    <CircularProgress/>
+                    <CircularProgress />
                 ) : error ? (
                     'Failed to load!'
                 ) : items ? (

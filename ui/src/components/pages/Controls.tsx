@@ -7,7 +7,7 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import * as itemService from '../items/ItemService';
+import { deleteCompletedItems } from '../items/ItemService';
 import { Snackbar } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 
@@ -51,7 +51,7 @@ export default function Controls({
 
     const handleDeleteCompletedItems = () => {
         handleClose();
-        itemService.deleteCompletedItems().then(response => {
+        deleteCompletedItems().then(response => {
             if (response.status >= 400) {
                 setDeleteError(
                     'Failed to delete completed items. Please try again.'

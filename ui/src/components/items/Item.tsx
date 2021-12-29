@@ -28,12 +28,12 @@ interface ItemProps {
 }
 
 export default function Item({
-                                 id,
-                                 text,
-                                 dateCompleted,
-                                 showCompleted,
-                                 onChange,
-                             }: ItemProps) {
+    id,
+    text,
+    dateCompleted,
+    showCompleted,
+    onChange,
+}: ItemProps) {
     const classes = useStyles();
     const [checked, setChecked] = React.useState(!!dateCompleted);
     const [error, setError] = React.useState('');
@@ -86,7 +86,7 @@ export default function Item({
                             inputProps={{ 'aria-labelledby': labelId }}
                         />
                     </ListItemIcon>
-                    <ListItemText id={labelId} primary={text}/>
+                    <ListItemText id={labelId} primary={text} />
 
                     <Snackbar
                         open={!!error}

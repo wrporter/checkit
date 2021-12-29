@@ -37,7 +37,7 @@ function AuthenticationProvider({ ...rest }) {
 
     if (!firstAttemptFinished) {
         if (isLoading) {
-            return <FullPageSpinner/>;
+            return <FullPageSpinner />;
         }
         if (error) {
             return (
