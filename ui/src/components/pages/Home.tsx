@@ -31,9 +31,13 @@ export default function Home() {
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState<ItemType[]>([]);
-    const { error, isLoading } = useQuery('items', getItems, {
-        onSuccess: response => setItems(response.items),
-    });
+    const { data, error, isLoading } = useQuery('items', getItems);
+
+    React.useEffect(() => {
+        if (data?.items) {
+            setItems(data.items);
+        }
+    }, [data])
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         setSaveError('');
