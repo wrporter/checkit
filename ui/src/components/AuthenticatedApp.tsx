@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme => ({
 export default function AuthenticatedApp() {
     const classes = useStyles();
     const user = useUser();
-    const { logout, reload } = useAuthentication();
+    const { logout, refetch } = useAuthentication();
 
     const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
     const open = Boolean(anchorEl);
@@ -75,10 +75,10 @@ export default function AuthenticatedApp() {
         );
         ws.onmessage = event => {
             if (event.data === 'session_end') {
-                reload();
+                refetch();
             }
         };
-    }, [reload]);
+    }, [refetch]);
 
     React.useEffect(() => {
         checkSessionEnd();

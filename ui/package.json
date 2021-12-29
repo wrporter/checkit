@@ -16,8 +16,8 @@
     "@mui/styles": "^5.2.3",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
-    "react-async": "^10.0.1",
     "react-google-login": "^5.2.2",
+    "react-query": "^3.34.7",
     "react-router-dom": "^6.2.1"
   },
   "devDependencies": {

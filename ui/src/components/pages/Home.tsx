@@ -3,13 +3,13 @@ import Typography from '@mui/material/Typography';
 import { TextField } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
-import * as itemService from '../items/ItemService';
+import { saveItem, getItems } from '../items/ItemService';
 import CircularProgress from '@mui/material/CircularProgress';
-import { useAsync } from 'react-async';
 import List from '@mui/material/List';
 import Controls from './Controls';
 import { Item as ItemType } from '../items/ItemService';
 import Item from '../items/Item';
+import { useQuery } from 'react-query';
 
 const useStyles = makeStyles(theme => ({
     input: {
@@ -31,17 +31,15 @@ export default function Home() {
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState<ItemType[]>([]);
-    const { error, isPending } = useAsync({
-        promiseFn: itemService.getItems,
-        onResolve: value => setItems(value.items),
+    const { error, isLoading } = useQuery('items', getItems, {
+        onSuccess: response => setItems(response.items),
     });
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         setSaveError('');
         if (e.key === 'Enter') {
             const item = { text: value };
-            itemService
-                .saveItem(item)
+            saveItem(item)
                 .then(savedItem => {
                     setItems([savedItem].concat(items));
                     setValue('');
@@ -89,8 +87,8 @@ export default function Home() {
             ) : null}
 
             <List>
-                {isPending ? (
-                    <CircularProgress />
+                {isLoading ? (
+                    <CircularProgress/>
                 ) : error ? (
                     'Failed to load!'
                 ) : items ? (

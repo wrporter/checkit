@@ -1,48 +1,47 @@
 import React, { createContext, useContext } from 'react';
-import { useAsync } from 'react-async';
 import * as PropTypes from 'prop-types';
-import { bootstrapAppData } from '../utils/bootstrap';
 import * as authService from './AuthenticationService';
+import { getUser } from './AuthenticationService';
 import FullPageSpinner from '../utils/FullPageSpinner';
+import { useQuery } from 'react-query';
+import { red } from '@mui/material/colors';
 import { User } from './UserContext';
 
 export interface Authentication {
-    data: { user: User };
+    user?: User;
     login: (tokenResponse: any) => Promise<void>;
     logout: () => Promise<void>;
     register: () => void;
-    reload : () => void;
+    refetch: () => void;
 }
 
 const AuthenticationContext = createContext<Authentication | undefined>(undefined);
 
-function AuthenticationProvider({...rest}) {
+function AuthenticationProvider({ ...rest }) {
     const [firstAttemptFinished, setFirstAttemptFinished] = React.useState(
         false
     );
     const {
-        data = { user: null },
+        data: user,
         error,
-        isPending,
-        isSettled,
-        reload,
-    } = useAsync({
-        promiseFn: bootstrapAppData,
-    });
+        isLoading,
+        isFetched,
+        refetch,
+    } = useQuery<User, Error>('user', getUser);
 
     React.useLayoutEffect(() => {
-        if (isSettled) {
+        if (isFetched) {
             setFirstAttemptFinished(true);
         }
-    }, [isSettled]);
+    }, [isFetched]);
 
     if (!firstAttemptFinished) {
-        if (isPending) {
-            return <FullPageSpinner />;
+        if (isLoading) {
+            return <FullPageSpinner/>;
         }
         if (error) {
             return (
-                <div style={{ color: 'red' }}>
+                <div style={{ color: red['900'] }}>
                     <p>Uh oh... There's a problem. Try refreshing the app.</p>
                     <pre>{error.message}</pre>
                 </div>
@@ -51,14 +50,18 @@ function AuthenticationProvider({...rest}) {
     }
 
     const login = (tokenResponse: any) =>
-        authService.login(tokenResponse).then(reload);
+        authService.login(tokenResponse).then(() => {
+            refetch()
+        });
     // const register = form => authClient.register(form).then(reload);
     const register = () => console.log('TODO register');
-    const logout = () => authService.logout().then(reload);
+    const logout = () => authService.logout().then(() => {
+        refetch()
+    });
 
     return (
         <AuthenticationContext.Provider
-            value={{ data, login, logout, register, reload }}
+            value={{ user, login, logout, register, refetch }}
             {...rest}
         />
     );

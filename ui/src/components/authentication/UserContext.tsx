@@ -10,13 +10,11 @@ export interface User {
 const UserContext = React.createContext<User | undefined>(undefined);
 
 function UserProvider({ ...rest }) {
-    const {
-        data: { user },
-    } = useAuthentication();
+    const { user } = useAuthentication();
     return <UserContext.Provider value={user} {...rest} />;
 }
 
-function useUser() {
+function useUser(): User {
     const context = React.useContext(UserContext);
     if (context === undefined) {
         throw new Error(`useUser must be used within a UserProvider`);

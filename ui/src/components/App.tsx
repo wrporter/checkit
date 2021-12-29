@@ -1,13 +1,13 @@
 import React from 'react';
-import { useUser } from './authentication/UserContext';
 import FullPageSpinner from './utils/FullPageSpinner';
+import { useAuthentication } from './authentication/AuthenticationContext';
 
 const loadAuthenticatedApp = () => import('./AuthenticatedApp');
 const AuthenticatedApp = React.lazy(loadAuthenticatedApp);
 const UnauthenticatedApp = React.lazy(() => import('./UnauthenticatedApp'));
 
 export default function App() {
-    const user = useUser();
+    const { user } = useAuthentication();
 
     React.useEffect(() => {
         loadAuthenticatedApp();

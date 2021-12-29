@@ -1,10 +1,10 @@
 import React from 'react';
 import Typography from '@mui/material/Typography';
-import { useUser } from '../authentication/UserContext';
 import Avatar from '@mui/material/Avatar';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
+import { useUser } from '../authentication/UserContext';
 
 const useStyles = makeStyles(theme => ({
     avatar: {
