@@ -19,12 +19,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+interface ControlsProps {
+    className?: string,
+    showCompleted: boolean,
+    onShowCompletedChange: (showCompleted: boolean) => void,
+    onDeleteCompleted: () => void,
+}
+
 export default function Controls({
     className,
     showCompleted,
     onShowCompletedChange,
     onDeleteCompleted,
-}) {
+}: ControlsProps) {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
     const [deleteError, setDeleteError] = React.useState('');

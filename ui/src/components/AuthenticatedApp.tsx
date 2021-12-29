@@ -105,7 +105,7 @@ export default function AuthenticatedApp() {
 
                         <Button
                             data-testid="AccountMenu"
-                            ref={anchorRef}
+                            buttonRef={anchorRef}
                             onClick={handleAccountMenuClick}
                             className={classes.accountButton}
                             startIcon={
@@ -150,7 +150,7 @@ export default function AuthenticatedApp() {
 
                 <Box className={classes.content}>
                     <Routes>
-                        <Route exact path="/" element={<Home />} />
+                        <Route path="/" element={<Home />} />
                         <Route path="/profile" element={<Profile />} />
                     </Routes>
                 </Box>

@@ -4,17 +4,25 @@ import * as PropTypes from 'prop-types';
 import { bootstrapAppData } from '../utils/bootstrap';
 import * as authService from './AuthenticationService';
 import FullPageSpinner from '../utils/FullPageSpinner';
+import { User } from './UserContext';
 
-const AuthenticationContext = createContext();
+export interface Authentication {
+    data: { user: User };
+    login: (tokenResponse: any) => Promise<void>;
+    logout: () => Promise<void>;
+    register: () => void;
+    reload : () => void;
+}
 
-function AuthenticationProvider(props) {
+const AuthenticationContext = createContext<Authentication | undefined>(undefined);
+
+function AuthenticationProvider({...rest}) {
     const [firstAttemptFinished, setFirstAttemptFinished] = React.useState(
         false
     );
     const {
         data = { user: null },
         error,
-        isRejected,
         isPending,
         isSettled,
         reload,
@@ -32,7 +40,7 @@ function AuthenticationProvider(props) {
         if (isPending) {
             return <FullPageSpinner />;
         }
-        if (isRejected) {
+        if (error) {
             return (
                 <div style={{ color: 'red' }}>
                     <p>Uh oh... There's a problem. Try refreshing the app.</p>
@@ -42,7 +50,7 @@ function AuthenticationProvider(props) {
         }
     }
 
-    const login = tokenResponse =>
+    const login = (tokenResponse: any) =>
         authService.login(tokenResponse).then(reload);
     // const register = form => authClient.register(form).then(reload);
     const register = () => console.log('TODO register');
@@ -51,7 +59,7 @@ function AuthenticationProvider(props) {
     return (
         <AuthenticationContext.Provider
             value={{ data, login, logout, register, reload }}
-            {...props}
+            {...rest}
         />
     );
 }

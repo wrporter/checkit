@@ -10,7 +10,6 @@ import logo from './logo-32x32.png';
 import Paper from '@material-ui/core/Paper';
 import { ReactComponent as GoogleLogo } from './google-logo.svg';
 import Button from "@material-ui/core/Button";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 
 const useStyles = makeStyles(() => ({
     container: {
@@ -51,7 +50,7 @@ export default function UnauthenticatedApp() {
     const { login } = useAuthentication();
     const classes = useStyles();
 
-    const failureCallback = response => {
+    const failureCallback = (response: any) => {
         console.log(response);
     };
 
@@ -77,7 +76,7 @@ export default function UnauthenticatedApp() {
                     <Grid container justifyContent="center">
                         <GoogleLogin
                             data-testid="LoginButton"
-                            clientId={process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID}
+                            clientId={process.env.REACT_APP_GOOGLE_OAUTH_CLIENT_ID || ""}
                             onSuccess={login}
                             onFailure={failureCallback}
                             render={(renderProps) => (

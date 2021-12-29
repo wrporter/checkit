@@ -6,9 +6,10 @@ import Box from '@material-ui/core/Box';
 import * as itemService from '../items/ItemService';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { useAsync } from 'react-async';
-import Item from '../items/Item';
 import List from '@material-ui/core/List';
 import Controls from './Controls';
+import { Item as ItemType } from '../items/ItemService';
+import Item from '../items/Item';
 
 const useStyles = makeStyles(theme => ({
     input: {
@@ -29,16 +30,16 @@ export default function Home() {
     const [showCompleted, setShowCompleted] = React.useState(false);
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
-    const [items, setItems] = React.useState([]);
+    const [items, setItems] = React.useState<ItemType[]>([]);
     const { error, isPending } = useAsync({
         promiseFn: itemService.getItems,
         onResolve: value => setItems(value.items),
     });
 
-    const handleKeyDown = e => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         setSaveError('');
         if (e.key === 'Enter') {
-            const item = { text: e.target.value };
+            const item = { text: value };
             itemService
                 .saveItem(item)
                 .then(savedItem => {
@@ -48,20 +49,23 @@ export default function Home() {
                 .catch(err => setSaveError(err.message));
         }
     };
-    const handleChange = e => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setValue(e.target.value);
     };
 
-    const handleShowCompletedChange = value => {
+    const handleShowCompletedChange = (value: boolean) => {
         setShowCompleted(value);
     };
     const handleDeleteCompleted = () => {
         const incompleteItems = items.filter(item => !item.dateCompleted);
         setItems(incompleteItems);
     };
-    const handleItemChange = (itemId, dateCompleted) => {
+    const handleItemChange = (itemId: string, dateCompleted?: string) => {
         // TODO Clean this up. This logic of mutating a value within the items list is a hack.
-        items.find(item => item.id === itemId).dateCompleted = dateCompleted;
+        const item = items.find(item => item.id === itemId);
+        if (item) {
+            item.dateCompleted = dateCompleted;
+        }
         setItems(items);
     };
 

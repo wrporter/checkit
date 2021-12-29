@@ -7,7 +7,7 @@ export function getUser() {
     });
 }
 
-export function login(tokenCallback) {
+export function login(tokenCallback: any) {
     return fetch('/api/google/login', {
         method: 'POST',
         headers: {

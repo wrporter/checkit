@@ -1,13 +1,19 @@
 import React from 'react';
 import { useAuthentication } from './AuthenticationContext';
 
-const UserContext = React.createContext();
+export interface User {
+    name: string;
+    email: string;
+    imageUrl: string;
+}
 
-function UserProvider(props) {
+const UserContext = React.createContext<User | undefined>(undefined);
+
+function UserProvider({ ...rest }) {
     const {
         data: { user },
     } = useAuthentication();
-    return <UserContext.Provider value={user} {...props} />;
+    return <UserContext.Provider value={user} {...rest} />;
 }
 
 function useUser() {

@@ -1,4 +1,14 @@
-export function saveItem(item) {
+export interface Item {
+    id: string;
+    text: string;
+    dateCompleted?: string;
+}
+
+export interface SaveItem {
+    text: string;
+}
+
+export function saveItem(item: SaveItem) {
     return fetch('/api/items', {
         method: 'POST',
         headers: {
@@ -15,7 +25,7 @@ export function saveItem(item) {
         .then(response => response.json());
 }
 
-export function updateItemStatus(itemId, status) {
+export function updateItemStatus(itemId: string, status: string) {
     return fetch(`/api/items/${itemId}`, {
         method: 'POST',
         headers: {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ChangeEventHandler } from 'react';
 import Checkbox from '@material-ui/core/Checkbox';
 import { makeStyles } from '@material-ui/core/styles';
 import classNames from 'classnames';
@@ -19,23 +19,31 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+interface ItemProps {
+    id: string;
+    text: string;
+    dateCompleted?: string;
+    showCompleted: boolean;
+    onChange: (id: string, date?: string) => void;
+}
+
 export default function Item({
     id,
     text,
     dateCompleted,
     showCompleted,
     onChange,
-}) {
+}: ItemProps) {
     const classes = useStyles();
     const [checked, setChecked] = React.useState(!!dateCompleted);
     const [error, setError] = React.useState('');
 
-    const handleChange = event => {
+    const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
         const checked = event.target.checked;
         handleToggle(checked);
     };
 
-    const handleToggle = checked => () => {
+    const handleToggle = (checked: boolean) => () => {
         setChecked(checked);
         itemService
             .updateItemStatus(id, checked ? 'Complete' : 'Incomplete')
@@ -64,7 +72,7 @@ export default function Item({
                 dense
                 button
                 onClick={handleToggle(!checked)}
-                className={classNames(classes.root, {
+                className={classNames({
                     [classes.checked]: checked,
                 })}
             >
