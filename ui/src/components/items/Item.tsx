@@ -3,7 +3,7 @@ import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
 import * as itemService from './ItemService';
-import { Snackbar } from '@mui/material';
+import { ListItemButton, Snackbar } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -28,20 +28,16 @@ interface ItemProps {
 }
 
 export default function Item({
-    id,
-    text,
-    dateCompleted,
-    showCompleted,
-    onChange,
-}: ItemProps) {
+                                 id,
+                                 text,
+                                 dateCompleted,
+                                 showCompleted,
+                                 onChange,
+                             }: ItemProps) {
     const classes = useStyles();
     const [checked, setChecked] = React.useState(!!dateCompleted);
     const [error, setError] = React.useState('');
-
-    const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-        const checked = event.target.checked;
-        handleToggle(checked);
-    };
+    const labelId = `checkbox-item-label-${id}`
 
     const handleToggle = (checked: boolean) => () => {
         setChecked(checked);
@@ -60,6 +56,11 @@ export default function Item({
             });
     };
 
+    const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
+        const checked = event.target.checked;
+        handleToggle(checked);
+    };
+
     const handleErrorClose = () => {
         setError('');
     };
@@ -69,28 +70,31 @@ export default function Item({
             <ListItem
                 data-testid={`Home.Item.${id}`}
                 data-checked={checked}
-                dense
-                button
-                onClick={handleToggle(!checked)}
                 className={classNames({
                     [classes.checked]: checked,
                 })}
+                disablePadding
             >
-                <ListItemIcon>
-                    <Checkbox
-                        color="primary"
-                        edge="start"
-                        checked={checked}
-                        onChange={handleChange}
+                <ListItemButton role={undefined} onClick={handleToggle(!checked)}>
+                    <ListItemIcon>
+                        <Checkbox
+                            edge="start"
+                            checked={checked}
+                            onChange={handleChange}
+                            tabIndex={-1}
+                            disableRipple
+                            inputProps={{ 'aria-labelledby': labelId }}
+                        />
+                    </ListItemIcon>
+                    <ListItemText id={labelId} primary={text}/>
+
+                    <Snackbar
+                        open={!!error}
+                        message={error}
+                        autoHideDuration={5000}
+                        onClose={handleErrorClose}
                     />
-                </ListItemIcon>
-                <ListItemText primary={text} />
-                <Snackbar
-                    open={!!error}
-                    message={error}
-                    autoHideDuration={5000}
-                    onClose={handleErrorClose}
-                />
+                </ListItemButton>
             </ListItem>
         </Collapse>
     );
