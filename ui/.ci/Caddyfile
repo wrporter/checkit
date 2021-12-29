@@ -1,11 +1,13 @@
-0.0.0.0
-browse
-gzip
-log stdout
+http://localhost, http://127.0.0.1, http://checkit.sunbeam.cf
 
-proxy /api {$API_HOST}:9000
+file_server
+encode gzip
 
-rewrite / {
-    if {path} not_match ^/api
-    to {path} /
-}
+# Cache all static assets
+header /static/* Cache-Control max-age=31536000
+
+# Proxy API requests to the backend server
+# reverse_proxy /api* 127.0.0.1:9000 # Does not work with try_files
+
+# Send all requests to the root for single page applications
+try_files {path} /

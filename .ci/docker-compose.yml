@@ -5,7 +5,10 @@ services:
     image: checkit-ui
     restart: unless-stopped
     ports:
-      - 9010:2015
+      - 9010:80
+    volumes:
+      - /volume1/docker/checkit/ui/caddy_data:/data
+      - /volume1/docker/checkit/ui/caddy_config:/config
     environment:
       - API_HOST=apihost
     links:
