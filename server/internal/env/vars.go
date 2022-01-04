@@ -12,7 +12,11 @@ var (
 )
 
 func SiteURL() string {
-	return fmt.Sprintf("%s://%s:%s", SiteProtocol, SiteHost, SitePort)
+	port := ":" + SitePort
+	if SitePort == "" {
+		port = ""
+	}
+	return fmt.Sprintf("%s://%s%s", SiteProtocol, SiteHost, port)
 }
 
 func AppDomain() string {
