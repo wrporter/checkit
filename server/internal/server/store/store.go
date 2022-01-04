@@ -10,13 +10,13 @@ import (
 )
 
 type Store interface {
-	SaveUser(user User) (primitive.ObjectID, error)
-	GetUserByEmail(email string) (User, error)
+	SaveUser(ctx context.Context, user User) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
 
-	SaveItem(userID primitive.ObjectID, text string) (Item, error)
-	GetItemsForUser(userID primitive.ObjectID) ([]Item, error)
-	UpdateItemStatus(userID primitive.ObjectID, itemID string, status ItemStatus) error
-	DeleteCompletedItems(userID primitive.ObjectID) error
+	SaveItem(ctx context.Context, userID primitive.ObjectID, text string) (Item, error)
+	GetItemsForUser(ctx context.Context, userID primitive.ObjectID) ([]Item, error)
+	UpdateItemStatus(ctx context.Context, userID primitive.ObjectID, itemID string, status ItemStatus) error
+	DeleteCompletedItems(ctx context.Context, userID primitive.ObjectID) error
 }
 
 type MongoStore struct {

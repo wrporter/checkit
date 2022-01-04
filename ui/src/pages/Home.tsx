@@ -3,16 +3,18 @@ import Typography from '@mui/material/Typography';
 import { TextField } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
-import { saveItem, getItems } from '../items/ItemService';
+import { getItems, Item as ItemType, saveItem } from '../services/ItemService';
 import CircularProgress from '@mui/material/CircularProgress';
 import List from '@mui/material/List';
-import Controls from './Controls';
-import { Item as ItemType } from '../items/ItemService';
-import Item from '../items/Item';
+import Controls from '../components/Controls/Controls';
+import Item from '../components/items/Item';
 import { useQuery } from 'react-query';
-import { useLocalStorage } from '../../context/useLocalStorage';
+import { useLocalStorage } from '../hooks';
 
 const useStyles = makeStyles(theme => ({
+    container: {
+        padding: 32,
+    },
     input: {
         marginTop: 12,
         marginBottom: 24,
@@ -32,7 +34,7 @@ export default function Home() {
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState<ItemType[]>([]);
-    const { data, error, isLoading } = useQuery('items', getItems);
+    const { data, error, isLoading } = useQuery('items', getItems, { refetchOnMount: 'always' });
 
     React.useEffect(() => {
         if (data?.items) {
@@ -42,7 +44,7 @@ export default function Home() {
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         setSaveError('');
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && value) {
             const item = { text: value };
             saveItem(item)
                 .then(savedItem => {
@@ -73,7 +75,7 @@ export default function Home() {
     };
 
     return (
-        <Box>
+        <Box className={classes.container}>
             <Typography variant="h4">Get stuff done!</Typography>
             <TextField
                 label="What do you want to do?"

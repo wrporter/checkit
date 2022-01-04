@@ -1,17 +1,18 @@
 import React, { createContext, useContext } from 'react';
 import * as PropTypes from 'prop-types';
-import * as authService from './AuthenticationService';
-import { getUser } from './AuthenticationService';
-import FullPageSpinner from '../utils/FullPageSpinner';
+import * as authService from '../../services/UserService';
+import { getUser } from '../../services/UserService';
+import FullPageSpinner from '../../components/utils/FullPageSpinner';
 import { useQuery } from 'react-query';
 import { red } from '@mui/material/colors';
 import { User } from './UserContext';
+import { useNavigate } from 'react-router-dom';
 
 export interface Authentication {
     user?: User;
-    login: (tokenResponse: any) => Promise<void>;
+    onLogin: (request: Promise<void>) => Promise<void>;
     logout: () => Promise<void>;
-    register: () => void;
+    register: (signupRequest: Promise<void>) => Promise<void>;
     refetch: () => void;
 }
 
@@ -28,6 +29,7 @@ function AuthenticationProvider({ ...rest }) {
         isFetched,
         refetch,
     } = useQuery<User, Error>('user', getUser);
+    const navigate = useNavigate();
 
     React.useLayoutEffect(() => {
         if (isFetched) {
@@ -49,19 +51,24 @@ function AuthenticationProvider({ ...rest }) {
         }
     }
 
-    const login = (tokenResponse: any) =>
-        authService.login(tokenResponse).then(() => {
-            refetch()
-        });
-    // const register = form => authClient.register(form).then(reload);
-    const register = () => console.log('TODO register');
-    const logout = () => authService.logout().then(() => {
-        refetch()
+    const onLogin = async (loginRequest: Promise<void>) => {
+        await loginRequest;
+        await refetch();
+        navigate('/', { replace: true });
+    }
+    const register = async (signupRequest: Promise<void>) => {
+        await signupRequest;
+        await refetch();
+        navigate('/', { replace: true });
+    };
+    const logout = () => authService.logout().then(async () => {
+        await refetch();
+        navigate('/');
     });
 
     return (
         <AuthenticationContext.Provider
-            value={{ user, login, logout, register, refetch }}
+            value={{ user, onLogin: onLogin, logout, register, refetch }}
             {...rest}
         />
     );

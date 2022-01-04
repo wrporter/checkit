@@ -1,25 +1,55 @@
 package auth
 
 import (
+	"encoding/gob"
 	"github.com/alexedwards/scs/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/julienschmidt/httprouter"
-	"github.com/wrporter/games-app/server/internal/env"
 	"github.com/wrporter/games-app/server/internal/server"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
 	"github.com/wrporter/games-app/server/internal/server/limit"
 	"github.com/wrporter/games-app/server/internal/server/session"
 	"github.com/wrporter/games-app/server/internal/server/store"
+	"github.com/wrporter/games-app/server/internal/server/validate"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"net/http"
 )
 
-var (
-	// TODO: Use for Authorization Code Flow
-	clientID     = env.RequireEnv("GOOGLE_OAUTH_CLIENT_ID")
-	clientSecret = env.RequireEnv("GOOGLE_OAUTH_CLIENT_SECRET")
+type (
+	SignupRequest struct {
+		Image       string `json:"image" validate:"max=5000"`
+		DisplayName string `json:"displayName" validate:"required,max=30"`
+		Email       string `json:"email" validate:"required,email,max=50"`
+		Password    string `json:"password" validate:"max=64"`
+	}
 
+	OAuthLoginRequest struct {
+		Email    string `json:"email" validate:"required,email,max=50"`
+		Provider string `json:"provider" validate:"required,max=50"`
+	}
+
+	OAuthSignupRequest struct {
+		ImageURL    string `json:"imageUrl" validate:"max=5000"`
+		DisplayName string `json:"displayName" validate:"required,max=30"`
+		Email       string `json:"email" validate:"required,email,max=50"`
+		Provider    string `json:"provider" validate:"required,max=50"`
+	}
+
+	LoginRequest struct {
+		Email    string `json:"email" validate:"required,email,max=50"`
+		Password string `json:"password" validate:"max=64"`
+	}
+
+	UserResponse struct {
+		Image       string `json:"image"`
+		DisplayName string `json:"displayName"`
+		Email       string `json:"email"`
+	}
+)
+
+var (
 	upgrader = websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -29,38 +59,59 @@ var (
 	}
 )
 
+func init() {
+	gob.Register(UserResponse{})
+}
+
 // TODO switch from Implicit Grant Flow to Authorization Code Flow
 func RegisterRoutes(server *server.Server) {
-	server.Router.POST("/api/google/login", httputil.Adapt(
-		Login(server.Store, server.SessionManager.Manager),
-		limit.WithRateLimit(),
-		httputil.ValidateRequestJSON(session.OAuthSession{}),
-	))
+	group := server.Router.Group("/api/auth").Use(limit.WithRateLimit())
+	{
+		group.GET("/oauth/google", GoogleCallback(server.Store, server.SessionManager.Manager))
+		group.GET("/oauth/google/:method", HandleGoogleLogin)
 
-	server.Router.POST("/api/logout", httputil.Adapt(
-		Logout(server.SessionManager),
-		limit.WithRateLimit(),
-		WithAuth(server.SessionManager.Manager)))
+		//group.POST("/oauth/google/login",
+		//	validate.RequestBody(OAuthLoginRequest{}),
+		//	GoogleLogin(server.Store, server.SessionManager.Manager),
+		//)
+		//group.POST("/oauth/google/signup",
+		//	validate.RequestBody(OAuthSignupRequest{}),
+		//	GoogleSignup(server.Store, server.SessionManager.Manager),
+		//)
 
-	server.Router.GET("/api/user", httputil.Adapt(
-		GetUser(server.SessionManager),
-		limit.WithRateLimit()))
+		group.POST("/login",
+			validate.RequestBody(LoginRequest{}),
+			Login(server.Store, server.SessionManager.Manager),
+		)
+
+		group.POST("/signup",
+			validate.RequestBody(SignupRequest{}),
+			Signup(server.Store, server.SessionManager.Manager),
+		)
+
+		group.POST("/logout",
+			RequireAuth(server.SessionManager.Manager),
+			Logout(server.SessionManager),
+		)
+
+		group.GET("/user", GetUser(server.SessionManager))
+	}
 
 	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))
 }
 
-func Keepalive(sessionManager *session.Manager) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		sess := session.Get(sessionManager, request.Context())
+func Keepalive(sessionManager *session.Manager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := session.Get(sessionManager, c.Request.Context())
 
-		conn, err := upgrader.Upgrade(writer, request, nil)
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
 			log.Println("[error] failed to upgrade route to websocket protocol", err.Error())
 			return
 		}
 		defer conn.Close()
 
-		cookie, err := request.Cookie(session.CookieName)
+		cookie, err := c.Request.Cookie(session.CookieName)
 		if err != nil {
 			log.Print("Failed to get session token cookie", err.Error())
 			return
@@ -74,7 +125,7 @@ func Keepalive(sessionManager *session.Manager) httprouter.Handle {
 		select {
 		case <-client.Delete:
 			err = conn.WriteMessage(websocket.TextMessage, []byte("session_end"))
-			log.Printf("Session expired for user %s", sess.User.ID.Hex())
+			log.Printf("Session expired for user %s", sess.ID.Hex())
 			sessionManager.Hub.Unregister <- cookie.Value
 			if err != nil {
 				log.Printf("Failed to send session end message: %v", err)
@@ -83,68 +134,109 @@ func Keepalive(sessionManager *session.Manager) httprouter.Handle {
 	}
 }
 
-func Logout(manager *session.Manager) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		sess := session.Get(manager, request.Context())
-		err := manager.Manager.Destroy(request.Context())
+func Logout(manager *session.Manager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := session.Get(manager, c.Request.Context())
+		err := manager.Manager.Destroy(c.Request.Context())
 		if err != nil {
-			httputil.RespondWithError(writer, request, err)
+			httputil.RespondWithError(c.Writer, c.Request, err)
 			return
 		}
-		log.Printf("User logged out - %s\n", sess.User.ID.Hex())
-		writer.WriteHeader(http.StatusOK)
+		log.Printf("User logged out - %s\n", sess.ID.Hex())
+		c.Writer.WriteHeader(http.StatusOK)
 	}
 }
 
-func GetUser(sessionManager *session.Manager) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		if auth := sessionManager.Manager.Get(request.Context(), session.ContextKey); auth == nil {
-			writer.WriteHeader(http.StatusNoContent)
+func GetUser(sessionManager *session.Manager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !session.Exists(sessionManager, c.Request.Context()) {
+			c.Writer.WriteHeader(http.StatusNoContent)
 			return
 		}
 
-		sess := session.Get(sessionManager, request.Context())
-		httputil.RespondWithJSON(writer, request, sess.User, 200)
+		user := session.Get(sessionManager, c.Request.Context())
+		httputil.RespondWithJSON(c.Writer, c.Request, user, 200)
 	}
 }
 
-func Login(store store.Store, sessionManager *scs.SessionManager) httprouter.Handle {
-	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		body := httputil.GetRequestBody(req).(*session.OAuthSession)
+func Signup(s store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		body := validate.GetRequestBody(c).(*SignupRequest)
 
-		u, err := store.GetUserByEmail(body.User.Email)
-		var id string
+		u, err := s.GetUserByEmail(c.Request.Context(), body.Email)
+		if u != nil {
+			log.Printf("Failed signup for user that already exists: %s\n", u.ID.Hex())
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPBadRequest("Bad request"))
+			return
+		} else if err != nil && err != mongo.ErrNoDocuments {
+			log.Printf("Failed to get user from database: %s\n", err.Error())
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
+			return
+		}
+
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+		if err != nil {
+			log.Printf("Failed to hash password: %s\n", err.Error())
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
+			return
+		}
+		u, err = s.SaveUser(c.Request.Context(), store.User{
+			Image:           body.Image,
+			Email:           body.Email,
+			DisplayName:     body.DisplayName,
+			Password:        string(hashedPassword),
+			SocialProviders: map[string]bool{"basic": true},
+		})
+		if err != nil {
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+			return
+		}
+
+		log.Printf("User signed up - %s\n", u.ID.Hex())
+		sessionManager.Put(c.Request.Context(), session.ContextKey, u)
+		c.Status(http.StatusNoContent)
+	}
+}
+
+func Login(store store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		body := validate.GetRequestBody(c).(*LoginRequest)
+
+		u, err := store.GetUserByEmail(c.Request.Context(), body.Email)
 		if err == mongo.ErrNoDocuments {
-			oid, err := store.SaveUser(body.User)
-			if err != nil {
-				httputil.RespondWithError(res, req, httputil.ErrHTTPInternalServerError(err.Error()))
-				return
-			}
-			body.User.ID = oid
-			id = oid.Hex()
-			log.Printf("User registered - %s\n", id)
+			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid username or password"))
+			return
 		} else if err != nil {
 			log.Printf("Failed to get user from database: %s\n", err.Error())
-			httputil.RespondWithError(res, req, httputil.ErrHTTPInternalServerError("Failed to login"))
-		} else {
-			id = u.ID.Hex()
-			body.User.ID = u.ID
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Failed to login"))
+			return
 		}
 
-		sessionManager.Put(req.Context(), session.ContextKey, body)
-		log.Printf("User logged in - %s\n", id)
-		httputil.RespondWithJSON(res, req, body.User, 200)
+		if !u.SocialProviders["basic"] {
+			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "TODO: Allow linking social accounts"))
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(body.Password))
+		if err != nil {
+			if err != bcrypt.ErrMismatchedHashAndPassword {
+				log.Printf("Failed to compare hash and password on login: %s\n", err.Error())
+			}
+			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid username or password"))
+			return
+		}
+
+		log.Printf("User logged in - %s\n", u.ID.Hex())
+		sessionManager.Put(c.Request.Context(), session.ContextKey, u)
+		c.JSON(http.StatusOK, u)
 	}
 }
 
-func WithAuth(sessionManager *scs.SessionManager) httputil.Adapter {
-	return func(next httprouter.Handle) httprouter.Handle {
-		return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-			if auth := sessionManager.Get(request.Context(), session.ContextKey); auth == nil {
-				httputil.RespondWithError(writer, request, httputil.ErrHTTPUnauthorized("401 Unauthorized"))
-			} else {
-				next(writer, request, params)
-			}
+func RequireAuth(sessionManager *scs.SessionManager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !sessionManager.Exists(c.Request.Context(), session.ContextKey) {
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPUnauthorized("401 Unauthorized"))
+			c.Abort()
 		}
 	}
 }

@@ -23,7 +23,9 @@ services:
       - GOOGLE_OAUTH_CLIENT_ID=TODO
       - GOOGLE_OAUTH_CLIENT_SECRET=TODO
       - APP_HOST=
+      - SITE_PROTOCOL=https
       - SITE_HOST=checkit.sunbeam.cf
+      - SITE_PORT=
       - MONGO_HOST=dbhost
     links:
       - "mongo:dbhost"

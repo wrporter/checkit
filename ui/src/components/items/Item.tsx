@@ -2,7 +2,7 @@ import React, { ChangeEventHandler } from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import * as itemService from './ItemService';
+import * as itemService from '../../services/ItemService';
 import { ListItemButton, Snackbar } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';

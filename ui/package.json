@@ -12,11 +12,12 @@
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.2.5",
+    "@mui/lab": "^5.0.0-alpha.63",
     "@mui/material": "^5.2.6",
     "@mui/styles": "^5.2.3",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
-    "react-google-login": "^5.2.2",
+    "react-hook-form": "^7.22.5",
     "react-query": "^3.34.7",
     "react-router-dom": "^6.2.1"
   },

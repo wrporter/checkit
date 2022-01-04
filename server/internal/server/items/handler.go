@@ -2,13 +2,14 @@ package items
 
 import (
 	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"github.com/wrporter/games-app/server/internal/server"
 	"github.com/wrporter/games-app/server/internal/server/auth"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
 	"github.com/wrporter/games-app/server/internal/server/limit"
 	"github.com/wrporter/games-app/server/internal/server/session"
 	"github.com/wrporter/games-app/server/internal/server/store"
+	"github.com/wrporter/games-app/server/internal/server/validate"
 	"net/http"
 	"time"
 )
@@ -32,62 +33,61 @@ type (
 )
 
 func RegisterRoutes(s *server.Server) {
-	s.Router.GET("/api/items", httputil.Adapt(
-		GetItems(s),
-		limit.WithRateLimit(),
-		auth.WithAuth(s.SessionManager.Manager),
-	))
-	s.Router.POST("/api/items", httputil.Adapt(
-		PostItem(s),
-		limit.WithRateLimit(),
-		auth.WithAuth(s.SessionManager.Manager),
-		httputil.ValidateRequestJSON(ItemRequest{}),
-	))
-	s.Router.DELETE("/api/items/completed", httputil.Adapt(
-		DeleteCompletedItems(s),
-		limit.WithRateLimit(),
-		auth.WithAuth(s.SessionManager.Manager),
-	))
-	s.Router.POST(fmt.Sprintf("/api/items/:%s", ParamItemID), httputil.Adapt(
-		UpdateItemStatus(s),
-		limit.WithRateLimit(),
-		auth.WithAuth(s.SessionManager.Manager),
-		httputil.ValidateRequestJSON(ItemUpdateStatusRequest{}),
-	))
-}
-
-func DeleteCompletedItems(s *server.Server) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		sess := session.Get(s.SessionManager, request.Context())
-		err := s.Store.DeleteCompletedItems(sess.User.ID)
-		if err != nil {
-			httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError(err.Error()))
-		}
-		writer.WriteHeader(http.StatusNoContent)
+	group := s.Router.Group("/api").Use(limit.WithRateLimit())
+	{
+		group.GET("/items",
+			auth.RequireAuth(s.SessionManager.Manager),
+			GetItems(s),
+		)
+		group.POST("/items",
+			auth.RequireAuth(s.SessionManager.Manager),
+			validate.RequestBody(ItemRequest{}),
+			PostItem(s),
+		)
+		group.DELETE("/items/completed",
+			auth.RequireAuth(s.SessionManager.Manager),
+			DeleteCompletedItems(s),
+		)
+		group.POST(fmt.Sprintf("/items/:%s", ParamItemID),
+			auth.RequireAuth(s.SessionManager.Manager),
+			validate.RequestBody(ItemUpdateStatusRequest{}),
+			UpdateItemStatus(s),
+		)
 	}
 }
 
-func UpdateItemStatus(s *server.Server) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		sess := session.Get(s.SessionManager, request.Context())
-		body := httputil.GetRequestBody(request).(*ItemUpdateStatusRequest)
-
-		itemID := params.ByName(ParamItemID)
-		err := s.Store.UpdateItemStatus(sess.User.ID, itemID, body.Status)
+func DeleteCompletedItems(s *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := session.Get(s.SessionManager, c.Request.Context())
+		err := s.Store.DeleteCompletedItems(c.Request.Context(), sess.ID)
 		if err != nil {
-			httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
 		}
-		writer.WriteHeader(http.StatusNoContent)
+		c.Writer.WriteHeader(http.StatusNoContent)
 	}
 }
 
-func GetItems(s *server.Server) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		sess := session.Get(s.SessionManager, request.Context())
+func UpdateItemStatus(s *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := session.Get(s.SessionManager, c.Request.Context())
+		body := validate.GetRequestBody(c).(*ItemUpdateStatusRequest)
 
-		items, err := s.Store.GetItemsForUser(sess.User.ID)
+		itemID := c.Params.ByName(ParamItemID)
+		err := s.Store.UpdateItemStatus(c.Request.Context(), sess.ID, itemID, body.Status)
 		if err != nil {
-			httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+		}
+		c.Writer.WriteHeader(http.StatusNoContent)
+	}
+}
+
+func GetItems(s *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := session.Get(s.SessionManager, c.Request.Context())
+
+		items, err := s.Store.GetItemsForUser(c.Request.Context(), sess.ID)
+		if err != nil {
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
 			return
 		}
 
@@ -95,23 +95,23 @@ func GetItems(s *server.Server) httprouter.Handle {
 		for i, item := range items {
 			response[i] = toItemResponse(item)
 		}
-		httputil.RespondWithJSON(writer, request, map[string]interface{}{"items": response}, http.StatusOK)
+		httputil.RespondWithJSON(c.Writer, c.Request, map[string]interface{}{"items": response}, http.StatusOK)
 	}
 }
 
-func PostItem(s *server.Server) httprouter.Handle {
-	return func(writer http.ResponseWriter, request *http.Request, params httprouter.Params) {
-		sess := session.Get(s.SessionManager, request.Context())
-		item := httputil.GetRequestBody(request).(*ItemRequest)
+func PostItem(s *server.Server) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sess := session.Get(s.SessionManager, c.Request.Context())
+		item := validate.GetRequestBody(c).(*ItemRequest)
 
-		savedItem, err := s.Store.SaveItem(sess.User.ID, item.Text)
+		savedItem, err := s.Store.SaveItem(c.Request.Context(), sess.ID, item.Text)
 		if err != nil {
-			httputil.RespondWithError(writer, request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
 			return
 		}
 
 		response := toItemResponse(savedItem)
-		httputil.RespondWithJSON(writer, request, response, http.StatusCreated)
+		httputil.RespondWithJSON(c.Writer, c.Request, response, http.StatusCreated)
 	}
 }
 

@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -50,6 +48,14 @@ type (
 	}
 )
 
+func ToHTTPError(status int, message string) HTTPError {
+	return HTTPError{
+		Status:  status,
+		Message: message,
+		Time:    time.Now(),
+	}
+}
+
 // RespondWithJSON is a helper function that responds with a JSON version of the data
 func RespondWithJSON(writer http.ResponseWriter, request *http.Request, data interface{}, statusCode int) {
 	responseBody, err := json.Marshal(data)
@@ -84,36 +90,12 @@ func RespondWithError(writer http.ResponseWriter, request *http.Request, err err
 	default:
 		// type switch on error type
 		switch err := err.(type) {
-		case validator.ValidationErrors:
-			response.Status = http.StatusBadRequest
-			response.Message = "There were validation errors. Correct the errors and try again."
-			response.Errors = toFieldValidationErrors(err)
 		case ErrHTTP:
 			response.Status = err.StatusCode()
 			response.Message = err.Error()
 		}
 	}
 	RespondWithJSON(writer, request, response, response.Status)
-}
-
-func toFieldValidationErrors(err error) []fieldValidationError {
-	var validationErrors []fieldValidationError
-	for _, validationError := range err.(validator.ValidationErrors) {
-		index := strings.Index(validationError.Namespace(), ".") + 1
-		namespace := validationError.Namespace()[index:]
-
-		rejectedValue := validationError.Value()
-		if isEmpty(validationError.Value()) {
-			rejectedValue = nil
-		}
-
-		validationErrors = append(validationErrors, fieldValidationError{
-			namespace,
-			validationError.Translate(Translator()),
-			rejectedValue,
-		})
-	}
-	return validationErrors
 }
 
 func isEmpty(value interface{}) bool {

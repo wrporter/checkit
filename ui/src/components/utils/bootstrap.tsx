@@ -1,4 +1,4 @@
-import { getUser } from '../authentication/AuthenticationService';
+import { getUser } from '../../services/UserService';
 
 export function bootstrapAppData() {
     return getUser().then(data => {

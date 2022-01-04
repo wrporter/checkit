@@ -2,9 +2,10 @@ import React from 'react';
 import { useAuthentication } from './AuthenticationContext';
 
 export interface User {
-    name: string;
+    displayName: string;
     email: string;
     imageUrl: string;
+    image: string;
 }
 
 const UserContext = React.createContext<User | undefined>(undefined);

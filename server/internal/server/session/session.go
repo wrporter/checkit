@@ -13,22 +13,16 @@ import (
 const CookieName = "SessionID"
 const ContextKey = "session.context"
 
-type (
-	OAuthSession struct {
-		TokenID     string     `json:"tokenId"`
-		AccessToken string     `json:"accessToken"`
-		User        store.User `json:"profileObj"`
-	}
-)
-
 type Manager struct {
 	Hub     *hub
 	Manager *scs.SessionManager
 }
 
-func NewManager() *Manager {
-	gob.Register(OAuthSession{})
+func init() {
+	gob.Register(store.User{})
+}
 
+func NewManager() *Manager {
 	sessionManager := scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
 	sessionManager.IdleTimeout = 2 * time.Hour
@@ -58,9 +52,16 @@ func NewManager() *Manager {
 	}
 }
 
-func Get(sessionManager *Manager, ctx context.Context) OAuthSession {
-	if sess, ok := sessionManager.Manager.Get(ctx, ContextKey).(OAuthSession); ok {
+func Get(sessionManager *Manager, ctx context.Context) store.User {
+	if sess, ok := sessionManager.Manager.Get(ctx, ContextKey).(store.User); ok {
 		return sess
 	}
-	return OAuthSession{}
+	return store.User{}
+}
+
+func Exists(sessionManager *Manager, ctx context.Context) bool {
+	if _, ok := sessionManager.Manager.Get(ctx, ContextKey).(store.User); ok {
+		return true
+	}
+	return false
 }

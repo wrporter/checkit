@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"github.com/didip/tollbooth"
 	"github.com/didip/tollbooth/limiter"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/wrporter/games-app/server/internal/server/httputil"
-	"net/http"
 	"time"
 )
 
@@ -32,20 +31,15 @@ func buildLimit() *limiter.Limiter {
 		SetMessage(string(responseBody))
 }
 
-func WithRateLimit() httputil.Adapter {
+func WithRateLimit() gin.HandlerFunc {
 	limit := buildLimit()
 
-	return func(next httprouter.Handle) httprouter.Handle {
-		return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-			httpError := tollbooth.LimitByRequest(limit, w, r)
-			if httpError != nil {
-				w.Header().Add("Content-Type", limit.GetMessageContentType())
-				w.WriteHeader(httpError.StatusCode)
-				w.Write([]byte(httpError.Message))
-				return
-			}
-
-			next(w, r, ps)
+	return func(c *gin.Context) {
+		httpError := tollbooth.LimitByRequest(limit, c.Writer, c.Request)
+		if httpError != nil {
+			c.Header("Content-Type", limit.GetMessageContentType())
+			c.String(httpError.StatusCode, httpError.Message)
+			c.Abort()
 		}
 	}
 }
