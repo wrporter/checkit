@@ -3,12 +3,14 @@ import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { red } from '@mui/material/colors';
 import { useAuthentication } from '../context/user';
-import { Button, Paper, Typography } from '@mui/material';
+import { Button, IconButton, InputAdornment, Paper, Typography } from '@mui/material';
 import { ReactComponent as GoogleLogo } from '../assets/google-logo.svg';
 import { signup, SignupForm } from '../services/UserService';
 import FormTextField from '../components/form/FormTextField';
 import { LoadingButton } from '@mui/lab';
 import { FormProvider, useForm } from 'react-hook-form';
+import PasswordMeter from '../components/form/PasswordMeter';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -81,6 +83,14 @@ export default function Signup() {
         }
     });
 
+    const [showPassword, setShowPassword] = React.useState(false);
+    const handleClickShowPassword = () => {
+        setShowPassword(v => !v);
+    };
+    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+    };
+
     const handleSubmit = (data: SignupForm) => {
         setLoading(true);
         register(signup({
@@ -106,7 +116,6 @@ export default function Signup() {
                         {error}
                     </Typography>
                 )}
-
 
                 <Button
                     component="a"
@@ -150,10 +159,23 @@ export default function Signup() {
                             />
                             <FormTextField
                                 name="password"
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 label="Password"
-                                rules={{
-                                    required: 'Please enter a password',
+                                rules={{ required: 'Please enter a password' }}
+                                helperText={<PasswordMeter password={methods.watch('password')} />}
+                                InputProps={{
+                                    endAdornment: (
+                                        <InputAdornment position="end">
+                                            <IconButton
+                                                aria-label="toggle password visibility"
+                                                onClick={handleClickShowPassword}
+                                                onMouseDown={handleMouseDownPassword}
+                                                edge="end"
+                                            >
+                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    )
                                 }}
                             />
 
