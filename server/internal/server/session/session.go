@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/alexedwards/scs/v2"
-	"github.com/wrporter/games-app/server/internal/env"
-	"github.com/wrporter/games-app/server/internal/server/store"
+	"github.com/wrporter/checkit/server/internal/env"
+	"github.com/wrporter/checkit/server/internal/server/store"
 	"net/http"
 	"time"
 )

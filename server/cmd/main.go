@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/wrporter/games-app/server/internal/env"
-	"github.com/wrporter/games-app/server/internal/server"
-	"github.com/wrporter/games-app/server/internal/server/auth"
-	"github.com/wrporter/games-app/server/internal/server/items"
+	"github.com/wrporter/checkit/server/internal/env"
+	"github.com/wrporter/checkit/server/internal/server"
+	"github.com/wrporter/checkit/server/internal/server/auth"
+	"github.com/wrporter/checkit/server/internal/server/items"
 	"log"
 	"net/http"
 	"time"

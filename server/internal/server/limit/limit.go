@@ -6,7 +6,7 @@ import (
 	"github.com/didip/tollbooth/limiter"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/wrporter/games-app/server/internal/server/httputil"
+	"github.com/wrporter/checkit/server/internal/server/httputil"
 	"time"
 )
 

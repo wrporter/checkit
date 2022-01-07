@@ -7,10 +7,10 @@ import (
 	"encoding/json"
 	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/wrporter/games-app/server/internal/env"
-	"github.com/wrporter/games-app/server/internal/server/httputil"
-	"github.com/wrporter/games-app/server/internal/server/session"
-	"github.com/wrporter/games-app/server/internal/server/store"
+	"github.com/wrporter/checkit/server/internal/env"
+	"github.com/wrporter/checkit/server/internal/server/httputil"
+	"github.com/wrporter/checkit/server/internal/server/session"
+	"github.com/wrporter/checkit/server/internal/server/store"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -47,7 +47,6 @@ const oauthGoogleAPIURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_
 
 func HandleGoogleLogin(c *gin.Context) {
 	state := setOAuthStateCookie(c.Writer, c.Param("method"))
-	//c.SetCookie("oauthstate", state, int((20 * time.Minute).Seconds()), "/", env.SiteHost, true, true)
 	u := oauthGoogleConfig.AuthCodeURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, u)
 }
