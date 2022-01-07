@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/wrporter/checkit/server/internal/app"
 	"github.com/wrporter/checkit/server/internal/env"
 	"github.com/wrporter/checkit/server/internal/server"
 	"github.com/wrporter/checkit/server/internal/server/auth"
@@ -24,6 +26,7 @@ func main() {
 	s := server.New()
 	auth.RegisterRoutes(s)
 	items.RegisterRoutes(s)
+	s.Router.GET("/api/version", gin.WrapF(app.VersionHandlerFunc))
 
 	log.Printf("listening on http://%s", env.AppDomain())
 	log.Fatal(http.ListenAndServe(env.AppDomain(), s.SessionManager.Manager.LoadAndSave(s)))

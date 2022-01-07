@@ -17,6 +17,8 @@ VERSION="${GIT_COMMIT:-$(git rev-parse HEAD)}"
 
 BUILD_ID=${BUILD_ID:="FAKE_ID_123"}
 
+GO_ROOT_IMPORT_PATH=github.com/wrporter/checkit/server
+
 GIT_REPO_URL="${GIT_URL:-$(git remote get-url origin)}"
 GIT_COMMIT=${GIT_COMMIT:-$(git rev-parse HEAD)}
 GIT_AUTHOR_EMAIL=${GIT_AUTHOR_EMAIL:-$(git show -s --format="%ae" HEAD)}
