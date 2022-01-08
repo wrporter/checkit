@@ -2,7 +2,7 @@ package env
 
 import (
 	"fmt"
-	"log"
+	"github.com/wrporter/checkit/server/internal/log"
 	"os"
 )
 
@@ -24,7 +24,7 @@ func DefaultEnv(key string, fallback string) string {
 
 func RequireNoErr(err error) {
 	if err != nil {
-		log.Println(err)
+		log.S().Error(err)
 		panic(err)
 	}
 }

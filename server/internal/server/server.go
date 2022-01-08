@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/wrporter/checkit/server/internal/server/session"
 	"github.com/wrporter/checkit/server/internal/server/store"
 	"github.com/wrporter/checkit/server/internal/server/validate"
+	"github.com/wrporter/checkit/server/internal/transaction"
+	"go.uber.org/zap"
 	"net"
 	"net/http"
 	"time"
@@ -59,8 +62,8 @@ func New() *Server {
 	sessionManager := session.NewManager()
 
 	router := gin.New()
-	router.Use(gin.Recovery())
-	router.Use(accessLogMiddleware(sessionManager))
+	router.Use(accessLog(sessionManager))
+	router.Use(ginzap.RecoveryWithZap(zap.L(), true))
 
 	validator := &validate.DefaultGinValidator{}
 	validator.RegisterValidator("itemStatus", store.ValidateItemStatus, "{0} must be a valid status")
@@ -80,20 +83,11 @@ func New() *Server {
 }
 
 func (server *Server) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
-	//start := time.Now()
-	//ctx, cancel := context.WithTimeout(request.Context(), requestTimeout)
-	//defer cancel()
-	//
-	//// TODO apply context data such as request transaction identifiers
-	//request = request.WithContext(ctx)
-	//
 	sw := responseRecorder{ResponseWriter: writer}
 	server.Router.ServeHTTP(&sw, request)
-
-	//defer server.logAccess(sw, request, start)
 }
 
-func accessLogMiddleware(sessionManager *session.Manager) gin.HandlerFunc {
+func accessLog(sessionManager *session.Manager) gin.HandlerFunc {
 	return gin.LoggerWithFormatter(func(param gin.LogFormatterParams) string {
 		access := map[string]interface{}{
 			"host":      param.Request.Host,
@@ -106,14 +100,23 @@ func accessLogMiddleware(sessionManager *session.Manager) gin.HandlerFunc {
 			"status":    param.StatusCode,
 			"time":      param.Latency.Milliseconds(),
 		}
+
 		if session.Exists(sessionManager, param.Request.Context()) {
 			access["userId"] = session.Get(sessionManager, param.Request.Context()).ID.Hex()
+		}
+
+		if t, ok := transaction.FromContext(param.Request.Context()); ok {
+			access["transactionId"] = t.TransactionID
+			access["requestId"] = t.RequestID
+			if t.ParentRequestID != "" {
+				access["parentRequestId"] = t.ParentRequestID
+			}
 		}
 
 		accessJsonString, err := json.Marshal(access)
 		if err != nil {
 			return fmt.Sprintf("Failed to marshal access logs %v\n", err.Error())
 		}
-		return fmt.Sprintf("%s [access] %s\n", param.TimeStamp.Format("2006-01-02T15:04:05.999Z"), accessJsonString)
+		return fmt.Sprintf("%s [access] %s\n", param.TimeStamp.Format(time.RFC3339), accessJsonString)
 	})
 }

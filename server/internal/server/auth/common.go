@@ -2,8 +2,8 @@ package auth
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/wrporter/checkit/server/internal/log"
 	"golang.org/x/oauth2"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,7 +13,7 @@ func OAuthLogin(oauthConf *oauth2.Config, oauthStateString string) gin.HandlerFu
 	return func(c *gin.Context) {
 		u, err := url.Parse(oauthConf.Endpoint.AuthURL)
 		if err != nil {
-			log.Printf("Failed to parse URL: %v\n", err)
+			log.S().Error("Failed to parse URL: %v\n", err)
 		}
 
 		params := url.Values{}

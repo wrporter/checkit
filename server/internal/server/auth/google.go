@@ -8,6 +8,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/wrporter/checkit/server/internal/env"
+	"github.com/wrporter/checkit/server/internal/log"
 	"github.com/wrporter/checkit/server/internal/server/httputil"
 	"github.com/wrporter/checkit/server/internal/server/session"
 	"github.com/wrporter/checkit/server/internal/server/store"
@@ -15,7 +16,6 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -56,32 +56,32 @@ func GoogleCallback(s store.Store, sessionManager *scs.SessionManager) gin.Handl
 		stateCookie, _ := c.Cookie("oauthstate")
 		stateParam := c.Query("state")
 		if stateParam != stateCookie {
-			log.Printf("Invalid OAuth state, expected %s, got %s\n", stateCookie, stateParam)
+			log.SC(c.Request.Context()).Errorf("Invalid OAuth state, expected %s, got %s", stateCookie, stateParam)
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
 
-		//log.Printf("State: %s\n", stateParam)
+		//log.SC(c.Request.Context()).Infof("State: %s", stateParam)
 		state := OAuthState{}
 		decoded, err := base64.URLEncoding.DecodeString(stateParam)
 		if err != nil {
-			log.Printf("Failed to decode OAuth state: %v", err)
+			log.SC(c.Request.Context()).Errorf("Failed to decode OAuth state: %v", err)
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
 		err = json.Unmarshal(decoded, &state)
 		if err != nil {
-			log.Printf("Failed to unmarshal OAuth state: %v", err)
+			log.SC(c.Request.Context()).Errorf("Failed to unmarshal OAuth state: %v", err)
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
-		//log.Printf("OAuth state: %+v\n", state)
+		//log.SC(c.Request.Context()).Infof("OAuth state: %+v", state)
 
 		code := c.Query("code")
 		if code == "" {
-			log.Printf("Code not found\n")
+			log.SC(c.Request.Context()).Errorf("Code not found")
 			if c.Query("error_reason") == "user_denied" {
-				log.Printf("User has denied permission\n")
+				log.SC(c.Request.Context()).Errorf("User has denied permission")
 			}
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
@@ -89,13 +89,13 @@ func GoogleCallback(s store.Store, sessionManager *scs.SessionManager) gin.Handl
 
 		token, err := oauthGoogleConfig.Exchange(context.Background(), code)
 		if err != nil {
-			log.Printf("Google OAuth exchanged failed: %v\n", err)
+			log.SC(c.Request.Context()).Errorf("Google OAuth exchanged failed: %v", err)
 			return
 		}
 
 		response, err := http.Get(oauthGoogleAPIURL + url.QueryEscape(token.AccessToken))
 		if err != nil {
-			log.Printf("Failed to get user info: %v\n", err)
+			log.SC(c.Request.Context()).Errorf("Failed to get user info: %v", err)
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
@@ -103,7 +103,7 @@ func GoogleCallback(s store.Store, sessionManager *scs.SessionManager) gin.Handl
 
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			log.Printf("Failed to read response body: %v\n", err)
+			log.SC(c.Request.Context()).Errorf("Failed to read response body: %v", err)
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
@@ -111,7 +111,7 @@ func GoogleCallback(s store.Store, sessionManager *scs.SessionManager) gin.Handl
 		var profile OAuthProfile
 		err = json.Unmarshal(body, &profile)
 		if err != nil {
-			log.Printf("Failed to unmarshal response body: %v\n", err)
+			log.SC(c.Request.Context()).Errorf("Failed to unmarshal response body: %v", err)
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
@@ -130,7 +130,7 @@ func login(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *
 		c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid credentials"))
 		return
 	} else if err != nil {
-		log.Printf("Failed to get user from database: %s\n", err.Error())
+		log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err.Error())
 		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Failed to login"))
 		return
 	}
@@ -140,7 +140,7 @@ func login(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *
 		return
 	}
 
-	log.Printf("User logged in - %s\n", u.ID.Hex())
+	log.SC(c.Request.Context()).Infof("User logged in - %s", u.ID.Hex())
 	sessionManager.Put(c.Request.Context(), session.ContextKey, u)
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
@@ -148,11 +148,11 @@ func login(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *
 func signup(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *scs.SessionManager) {
 	u, err := s.GetUserByEmail(c.Request.Context(), profile.Email)
 	if u != nil {
-		log.Printf("Failed signup for user that already exists: %s\n", u.ID.Hex())
+		log.SC(c.Request.Context()).Errorf("Failed signup for user that already exists: %s", u.ID.Hex())
 		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPBadRequest("Invalid credentials"))
 		return
 	} else if err != nil && err != mongo.ErrNoDocuments {
-		log.Printf("Failed to get user from database: %s\n", err.Error())
+		log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err.Error())
 		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
 		return
 	}
@@ -168,7 +168,7 @@ func signup(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager 
 		return
 	}
 
-	log.Printf("User signed up - %s\n", u.ID.Hex())
+	log.SC(c.Request.Context()).Infof("User signed up - %s", u.ID.Hex())
 	sessionManager.Put(c.Request.Context(), session.ContextKey, u)
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }

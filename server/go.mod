@@ -5,13 +5,16 @@ go 1.17
 require (
 	github.com/alexedwards/scs/v2 v2.5.0
 	github.com/didip/tollbooth v4.0.2+incompatible
+	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
 	github.com/go-playground/validator/v10 v10.10.0
+	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/pkg/errors v0.9.1
 	go.mongodb.org/mongo-driver v1.8.2
+	go.uber.org/zap v1.20.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8
 )
@@ -34,8 +37,10 @@ require (
 	github.com/xdg-go/scram v1.0.2 // indirect
 	github.com/xdg-go/stringprep v1.0.2 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
 	golang.org/x/text v0.3.6 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect

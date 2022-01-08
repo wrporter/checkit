@@ -5,6 +5,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/wrporter/checkit/server/internal/log"
 	"github.com/wrporter/checkit/server/internal/server"
 	"github.com/wrporter/checkit/server/internal/server/httputil"
 	"github.com/wrporter/checkit/server/internal/server/limit"
@@ -13,7 +14,6 @@ import (
 	"github.com/wrporter/checkit/server/internal/server/validate"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
-	"log"
 	"net/http"
 )
 
@@ -106,14 +106,14 @@ func Keepalive(sessionManager *session.Manager) gin.HandlerFunc {
 
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
-			log.Println("[error] failed to upgrade route to websocket protocol", err.Error())
+			log.SC(c.Request.Context()).Error("[error] failed to upgrade route to websocket protocol", err)
 			return
 		}
 		defer conn.Close()
 
 		cookie, err := c.Request.Cookie(session.CookieName)
 		if err != nil {
-			log.Print("Failed to get session token cookie", err.Error())
+			log.SC(c.Request.Context()).Error("Failed to get session token cookie", err)
 			return
 		}
 		client := &session.Client{
@@ -125,10 +125,10 @@ func Keepalive(sessionManager *session.Manager) gin.HandlerFunc {
 		select {
 		case <-client.Delete:
 			err = conn.WriteMessage(websocket.TextMessage, []byte("session_end"))
-			log.Printf("Session expired for user %s", sess.ID.Hex())
+			log.SC(c.Request.Context()).Infof("Session expired for user %s", sess.ID.Hex())
 			sessionManager.Hub.Unregister <- cookie.Value
 			if err != nil {
-				log.Printf("Failed to send session end message: %v", err)
+				log.SC(c.Request.Context()).Errorf("Failed to send session end message: %v", err)
 			}
 		}
 	}
@@ -142,7 +142,7 @@ func Logout(manager *session.Manager) gin.HandlerFunc {
 			httputil.RespondWithError(c.Writer, c.Request, err)
 			return
 		}
-		log.Printf("User logged out - %s\n", sess.ID.Hex())
+		log.SC(c.Request.Context()).Infof("User logged out - %s", sess.ID.Hex())
 		c.Writer.WriteHeader(http.StatusOK)
 	}
 }
@@ -165,18 +165,18 @@ func Signup(s store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
 
 		u, err := s.GetUserByEmail(c.Request.Context(), body.Email)
 		if u != nil {
-			log.Printf("Failed signup for user that already exists: %s\n", u.ID.Hex())
+			log.SC(c.Request.Context()).Errorf("Failed signup for user that already exists: %s", u.ID.Hex())
 			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPBadRequest("Bad request"))
 			return
 		} else if err != nil && err != mongo.ErrNoDocuments {
-			log.Printf("Failed to get user from database: %s\n", err.Error())
+			log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err)
 			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
 			return
 		}
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
 		if err != nil {
-			log.Printf("Failed to hash password: %s\n", err.Error())
+			log.SC(c.Request.Context()).Errorf("Failed to hash password: %s", err)
 			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
 			return
 		}
@@ -192,7 +192,7 @@ func Signup(s store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
 			return
 		}
 
-		log.Printf("User signed up - %s\n", u.ID.Hex())
+		log.SC(c.Request.Context()).Infof("User signed up - %s", u.ID.Hex())
 		sessionManager.Put(c.Request.Context(), session.ContextKey, u)
 		c.Status(http.StatusNoContent)
 	}
@@ -207,7 +207,7 @@ func Login(store store.Store, sessionManager *scs.SessionManager) gin.HandlerFun
 			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid username or password"))
 			return
 		} else if err != nil {
-			log.Printf("Failed to get user from database: %s\n", err.Error())
+			log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err)
 			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Failed to login"))
 			return
 		}
@@ -220,13 +220,13 @@ func Login(store store.Store, sessionManager *scs.SessionManager) gin.HandlerFun
 		err = bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(body.Password))
 		if err != nil {
 			if err != bcrypt.ErrMismatchedHashAndPassword {
-				log.Printf("Failed to compare hash and password on login: %s\n", err.Error())
+				log.SC(c.Request.Context()).Errorf("Failed to compare hash and password on login: %s", err)
 			}
 			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid username or password"))
 			return
 		}
 
-		log.Printf("User logged in - %s\n", u.ID.Hex())
+		log.SC(c.Request.Context()).Infof("User logged in - %s", u.ID.Hex())
 		sessionManager.Put(c.Request.Context(), session.ContextKey, u)
 		c.JSON(http.StatusOK, u)
 	}

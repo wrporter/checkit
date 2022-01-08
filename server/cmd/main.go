@@ -1,33 +1,34 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/wrporter/checkit/server/internal/app"
 	"github.com/wrporter/checkit/server/internal/env"
+	"github.com/wrporter/checkit/server/internal/log"
 	"github.com/wrporter/checkit/server/internal/server"
 	"github.com/wrporter/checkit/server/internal/server/auth"
 	"github.com/wrporter/checkit/server/internal/server/items"
-	"log"
+	"github.com/wrporter/checkit/server/internal/transaction"
+	"go.uber.org/zap"
 	"net/http"
-	"time"
 )
 
-type logWriter struct{}
-
-func (writer logWriter) Write(bytes []byte) (int, error) {
-	return fmt.Printf("%s %s", time.Now().UTC().Format("2006-01-02T15:04:05.999Z"), string(bytes))
-}
-
 func main() {
-	log.SetFlags(0)
-	log.SetOutput(new(logWriter))
+	log.MustInit()
 
 	s := server.New()
 	auth.RegisterRoutes(s)
 	items.RegisterRoutes(s)
 	s.Router.GET("/api/version", gin.WrapF(app.VersionHandlerFunc))
 
-	log.Printf("listening on http://%s", env.AppDomain())
-	log.Fatal(http.ListenAndServe(env.AppDomain(), s.SessionManager.Manager.LoadAndSave(s)))
+	zap.S().Infof("Listening at %s", env.AppDomain())
+	zap.S().Fatal(
+		http.ListenAndServe(env.AppDomain(),
+			transaction.WrapWithTransactionHeaders(
+				s.SessionManager.Manager.LoadAndSave(
+					s,
+				),
+			),
+		),
+	)
 }
