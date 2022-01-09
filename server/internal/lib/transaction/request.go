@@ -2,8 +2,6 @@ package transaction
 
 import (
 	"github.com/google/uuid"
-	"github.com/wrporter/checkit/server/internal/log"
-	"go.uber.org/zap"
 	"net/http"
 )
 
@@ -41,27 +39,4 @@ func SetRequestHeaders(r *http.Request, t Transaction) {
 func SetResponseHeaders(w http.ResponseWriter, t Transaction) {
 	w.Header().Set(headerTransactionID, t.TransactionID)
 	w.Header().Set(headerRequestID, t.RequestID)
-}
-
-// WrapWithTransactionHeaders sets transaction headers on the request's context
-// and sets the outgoing transaction headers.
-func WrapWithTransactionHeaders(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		t := FromRequest(r)
-
-		// Set headers on the context and request
-		ctx := SetOnContext(r.Context(), t)
-
-		// Set outgoing headers
-		SetResponseHeaders(w, t)
-
-		// Add transaction data to logs
-		ctx = log.NewContext(ctx, zap.String("transactionId", t.TransactionID))
-		ctx = log.NewContext(ctx, zap.String("requestId", t.RequestID))
-		if t.ParentRequestID != "" {
-			ctx = log.NewContext(ctx, zap.String("parentRequestId", t.ParentRequestID))
-		}
-
-		h.ServeHTTP(w, r.WithContext(ctx))
-	})
 }

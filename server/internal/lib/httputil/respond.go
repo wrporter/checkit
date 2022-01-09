@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"reflect"
 	"strconv"
@@ -47,6 +48,22 @@ type (
 		RejectedValue interface{} `json:"rejectedValue,omitempty"`
 	}
 )
+
+func InternalError(c *gin.Context, message string) {
+	c.JSON(http.StatusInternalServerError, HTTPError{
+		Status:  http.StatusInternalServerError,
+		Message: message,
+		Time:    time.Now(),
+	})
+}
+
+func Error(c *gin.Context, code int, message string) {
+	c.JSON(code, HTTPError{
+		Status:  code,
+		Message: message,
+		Time:    time.Now(),
+	})
+}
 
 func ToHTTPError(status int, message string) HTTPError {
 	return HTTPError{

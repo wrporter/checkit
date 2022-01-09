@@ -6,7 +6,7 @@ import (
 	"github.com/didip/tollbooth/limiter"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"github.com/wrporter/checkit/server/internal/server/httputil"
+	"github.com/wrporter/checkit/server/internal/lib/httputil"
 	"time"
 )
 
@@ -27,7 +27,7 @@ func buildLimit() *limiter.Limiter {
 	return tollbooth.NewLimiter(5, options).
 		SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"}).
 		SetBurst(10).
-		SetMessageContentType("application/json; charset=UTF-8").
+		SetMessageContentType("application/json").
 		SetMessage(string(responseBody))
 }
 

@@ -2,7 +2,7 @@ package env
 
 import (
 	"fmt"
-	"github.com/wrporter/checkit/server/internal/log"
+	"github.com/wrporter/checkit/server/internal/lib/log"
 	"os"
 )
 

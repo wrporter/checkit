@@ -3,20 +3,21 @@ package store
 import (
 	"context"
 	"fmt"
-	"github.com/wrporter/checkit/server/internal/env"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	env2 "github.com/wrporter/checkit/server/internal/lib/env"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Store interface {
 	SaveUser(ctx context.Context, user User) (*User, error)
+	DeleteUser(ctx context.Context, userID string) error
+	GetUser(ctx context.Context, userID string) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 
-	SaveItem(ctx context.Context, userID primitive.ObjectID, text string) (Item, error)
-	GetItemsForUser(ctx context.Context, userID primitive.ObjectID) ([]Item, error)
-	UpdateItemStatus(ctx context.Context, userID primitive.ObjectID, itemID string, status ItemStatus) error
-	DeleteCompletedItems(ctx context.Context, userID primitive.ObjectID) error
+	SaveItem(ctx context.Context, userID string, text string) (Item, error)
+	GetItemsForUser(ctx context.Context, userID string) ([]Item, error)
+	UpdateItemStatus(ctx context.Context, userID string, itemID string, status ItemStatus) error
+	DeleteCompletedItems(ctx context.Context, userID string) error
 }
 
 type MongoStore struct {
@@ -24,10 +25,10 @@ type MongoStore struct {
 }
 
 func New() Store {
-	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:27017", env.MongoHost))
+	clientOptions := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:27017", env2.MongoHost))
 	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
-		env.RequireNoErr(err)
+		env2.RequireNoErr(err)
 	}
 	return &MongoStore{client}
 }

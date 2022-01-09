@@ -3,13 +3,12 @@ package items
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/wrporter/checkit/server/internal/lib/gin/auth/oauth"
+	httputil2 "github.com/wrporter/checkit/server/internal/lib/httputil"
+	"github.com/wrporter/checkit/server/internal/lib/limit"
+	"github.com/wrporter/checkit/server/internal/lib/validate"
 	"github.com/wrporter/checkit/server/internal/server"
-	"github.com/wrporter/checkit/server/internal/server/auth"
-	"github.com/wrporter/checkit/server/internal/server/httputil"
-	"github.com/wrporter/checkit/server/internal/server/limit"
-	"github.com/wrporter/checkit/server/internal/server/session"
 	"github.com/wrporter/checkit/server/internal/server/store"
-	"github.com/wrporter/checkit/server/internal/server/validate"
 	"net/http"
 	"time"
 )
@@ -36,20 +35,20 @@ func RegisterRoutes(s *server.Server) {
 	group := s.Router.Group("/api").Use(limit.WithRateLimit())
 	{
 		group.GET("/items",
-			auth.RequireAuth(s.SessionManager.Manager),
+			oauth.RequireAuth(s.SessionManager),
 			GetItems(s),
 		)
 		group.POST("/items",
-			auth.RequireAuth(s.SessionManager.Manager),
+			oauth.RequireAuth(s.SessionManager),
 			validate.RequestBody(ItemRequest{}),
 			PostItem(s),
 		)
 		group.DELETE("/items/completed",
-			auth.RequireAuth(s.SessionManager.Manager),
+			oauth.RequireAuth(s.SessionManager),
 			DeleteCompletedItems(s),
 		)
 		group.POST(fmt.Sprintf("/items/:%s", ParamItemID),
-			auth.RequireAuth(s.SessionManager.Manager),
+			oauth.RequireAuth(s.SessionManager),
 			validate.RequestBody(ItemUpdateStatusRequest{}),
 			UpdateItemStatus(s),
 		)
@@ -58,10 +57,10 @@ func RegisterRoutes(s *server.Server) {
 
 func DeleteCompletedItems(s *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := session.Get(s.SessionManager, c.Request.Context())
-		err := s.Store.DeleteCompletedItems(c.Request.Context(), sess.ID)
+		user := s.SessionManager.Get(c.Request.Context())
+		err := s.Store.DeleteCompletedItems(c.Request.Context(), user.ID)
 		if err != nil {
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError(err.Error()))
 		}
 		c.Writer.WriteHeader(http.StatusNoContent)
 	}
@@ -69,13 +68,13 @@ func DeleteCompletedItems(s *server.Server) gin.HandlerFunc {
 
 func UpdateItemStatus(s *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := session.Get(s.SessionManager, c.Request.Context())
+		user := s.SessionManager.Get(c.Request.Context())
 		body := validate.GetRequestBody(c).(*ItemUpdateStatusRequest)
 
 		itemID := c.Params.ByName(ParamItemID)
-		err := s.Store.UpdateItemStatus(c.Request.Context(), sess.ID, itemID, body.Status)
+		err := s.Store.UpdateItemStatus(c.Request.Context(), user.ID, itemID, body.Status)
 		if err != nil {
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError(err.Error()))
 		}
 		c.Writer.WriteHeader(http.StatusNoContent)
 	}
@@ -83,11 +82,11 @@ func UpdateItemStatus(s *server.Server) gin.HandlerFunc {
 
 func GetItems(s *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := session.Get(s.SessionManager, c.Request.Context())
+		user := s.SessionManager.Get(c.Request.Context())
 
-		items, err := s.Store.GetItemsForUser(c.Request.Context(), sess.ID)
+		items, err := s.Store.GetItemsForUser(c.Request.Context(), user.ID)
 		if err != nil {
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError(err.Error()))
 			return
 		}
 
@@ -95,23 +94,23 @@ func GetItems(s *server.Server) gin.HandlerFunc {
 		for i, item := range items {
 			response[i] = toItemResponse(item)
 		}
-		httputil.RespondWithJSON(c.Writer, c.Request, map[string]interface{}{"items": response}, http.StatusOK)
+		httputil2.RespondWithJSON(c.Writer, c.Request, map[string]interface{}{"items": response}, http.StatusOK)
 	}
 }
 
 func PostItem(s *server.Server) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := session.Get(s.SessionManager, c.Request.Context())
+		user := s.SessionManager.Get(c.Request.Context())
 		item := validate.GetRequestBody(c).(*ItemRequest)
 
-		savedItem, err := s.Store.SaveItem(c.Request.Context(), sess.ID, item.Text)
+		savedItem, err := s.Store.SaveItem(c.Request.Context(), user.ID, item.Text)
 		if err != nil {
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+			httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError(err.Error()))
 			return
 		}
 
 		response := toItemResponse(savedItem)
-		httputil.RespondWithJSON(c.Writer, c.Request, response, http.StatusCreated)
+		httputil2.RespondWithJSON(c.Writer, c.Request, response, http.StatusCreated)
 	}
 }
 

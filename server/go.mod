@@ -5,7 +5,6 @@ go 1.17
 require (
 	github.com/alexedwards/scs/v2 v2.5.0
 	github.com/didip/tollbooth v4.0.2+incompatible
-	github.com/gin-contrib/zap v0.0.2
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/locales v0.14.0
 	github.com/go-playground/universal-translator v0.18.0
@@ -13,6 +12,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/pkg/errors v0.9.1
+	github.com/vearne/gin-timeout v0.0.9
 	go.mongodb.org/mongo-driver v1.8.2
 	go.uber.org/zap v1.20.0
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3

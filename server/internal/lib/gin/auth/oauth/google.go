@@ -1,16 +1,16 @@
-package auth
+package oauth
 
 import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/wrporter/checkit/server/internal/env"
-	"github.com/wrporter/checkit/server/internal/log"
-	"github.com/wrporter/checkit/server/internal/server/httputil"
-	"github.com/wrporter/checkit/server/internal/server/session"
+	env2 "github.com/wrporter/checkit/server/internal/lib/env"
+	"github.com/wrporter/checkit/server/internal/lib/gin/ginzap"
+	httputil2 "github.com/wrporter/checkit/server/internal/lib/httputil"
+	"github.com/wrporter/checkit/server/internal/lib/log"
+	"github.com/wrporter/checkit/server/internal/lib/session"
 	"github.com/wrporter/checkit/server/internal/server/store"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/oauth2"
@@ -35,9 +35,9 @@ type (
 
 var (
 	oauthGoogleConfig = &oauth2.Config{
-		ClientID:     env.RequireEnv("GOOGLE_OAUTH_CLIENT_ID"),
-		ClientSecret: env.RequireEnv("GOOGLE_OAUTH_CLIENT_SECRET"),
-		RedirectURL:  env.SiteURL() + "/api/auth/oauth/google",
+		ClientID:     env2.RequireEnv("GOOGLE_OAUTH_CLIENT_ID"),
+		ClientSecret: env2.RequireEnv("GOOGLE_OAUTH_CLIENT_SECRET"),
+		RedirectURL:  env2.SiteURL() + "/api/auth/oauth/google",
 		Scopes:       []string{"email", "profile"},
 		Endpoint:     google.Endpoint,
 	}
@@ -51,7 +51,7 @@ func HandleGoogleLogin(c *gin.Context) {
 	c.Redirect(http.StatusTemporaryRedirect, u)
 }
 
-func GoogleCallback(s store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
+func GoogleCallback(s store.Store, sessionManager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		stateCookie, _ := c.Cookie("oauthstate")
 		stateParam := c.Query("state")
@@ -124,36 +124,37 @@ func GoogleCallback(s store.Store, sessionManager *scs.SessionManager) gin.Handl
 	}
 }
 
-func login(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *scs.SessionManager) {
+func login(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *session.Manager) {
 	u, err := s.GetUserByEmail(c.Request.Context(), profile.Email)
 	if err == mongo.ErrNoDocuments {
-		c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid credentials"))
+		c.JSON(http.StatusUnauthorized, httputil2.ToHTTPError(http.StatusUnauthorized, "Invalid credentials"))
 		return
 	} else if err != nil {
 		log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err.Error())
-		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Failed to login"))
+		httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError("Failed to login"))
 		return
 	}
 
 	if !u.SocialProviders["google"] {
-		c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "TODO: Allow linking social accounts"))
+		c.JSON(http.StatusUnauthorized, httputil2.ToHTTPError(http.StatusUnauthorized, "TODO: Allow linking social accounts"))
 		return
 	}
 
-	log.SC(c.Request.Context()).Infof("User logged in - %s", u.ID.Hex())
-	sessionManager.Put(c.Request.Context(), session.ContextKey, u)
+	log.SC(c.Request.Context()).Infof("User logged in: %s", u.ID.Hex())
+	sessionManager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
+	ginzap.AddUserID(c, u.ID.Hex())
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
-func signup(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *scs.SessionManager) {
+func signup(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *session.Manager) {
 	u, err := s.GetUserByEmail(c.Request.Context(), profile.Email)
 	if u != nil {
 		log.SC(c.Request.Context()).Errorf("Failed signup for user that already exists: %s", u.ID.Hex())
-		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPBadRequest("Invalid credentials"))
+		httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPBadRequest("Invalid credentials"))
 		return
 	} else if err != nil && err != mongo.ErrNoDocuments {
 		log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err.Error())
-		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
+		httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError("Internal server error"))
 		return
 	}
 
@@ -164,12 +165,13 @@ func signup(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager 
 		SocialProviders: map[string]bool{"google": true},
 	})
 	if err != nil {
-		httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+		httputil2.RespondWithError(c.Writer, c.Request, httputil2.ErrHTTPInternalServerError(err.Error()))
 		return
 	}
 
-	log.SC(c.Request.Context()).Infof("User signed up - %s", u.ID.Hex())
-	sessionManager.Put(c.Request.Context(), session.ContextKey, u)
+	log.SC(c.Request.Context()).Infof("User signed up: %s", u.ID.Hex())
+	sessionManager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
+	ginzap.AddUserID(c, u.ID.Hex())
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
@@ -188,7 +190,7 @@ func setOAuthStateCookie(w http.ResponseWriter, method string) string {
 		Name:    "oauthstate",
 		Value:   stateString,
 		Expires: time.Now().Add(20 * time.Minute),
-		Domain:  env.SiteHost,
+		Domain:  env2.SiteHost,
 		Path:    "/",
 		//SameSite: http.SameSiteStrictMode, // TODO: Why doesn't strict mode work? Is it because of the OAuth redirect?
 		Secure:   true,

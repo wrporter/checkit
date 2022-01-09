@@ -19,6 +19,26 @@ type User struct {
 	UpdatedAt       time.Time          `json:"updatedAt" bson:"updatedAt"`
 }
 
+func (s *MongoStore) GetUser(ctx context.Context, userID string) (*User, error) {
+	collection := s.client.Database("checkit").Collection("users")
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{{"_id", bson.D{{"$eq", uid}}}}
+	result := collection.FindOne(ctx, filter)
+
+	var user User
+	err = result.Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
 func (s *MongoStore) GetUserByEmail(ctx context.Context, email string) (*User, error) {
 	collection := s.client.Database("checkit").Collection("users")
 	filter := bson.D{{"email", bson.D{{"$eq", email}}}}
@@ -45,4 +65,25 @@ func (s *MongoStore) SaveUser(ctx context.Context, user User) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (s *MongoStore) DeleteUser(ctx context.Context, userID string) error {
+	db := s.client.Database("checkit")
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Collection("items").DeleteMany(ctx, bson.D{{"userId", bson.D{{"$eq", uid}}}})
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Collection("users").DeleteOne(ctx, bson.D{{"_id", bson.D{{"$eq", uid}}}})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

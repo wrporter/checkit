@@ -37,26 +37,38 @@ func ValidateItemStatus(fl validator.FieldLevel) bool {
 	return false
 }
 
-func (s *MongoStore) SaveItem(ctx context.Context, userID primitive.ObjectID, text string) (Item, error) {
+func (s *MongoStore) SaveItem(ctx context.Context, userID string, text string) (Item, error) {
 	collection := s.client.Database("checkit").Collection("items")
 	dateCreated := time.Now()
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return Item{}, err
+	}
+
 	item := Item{
 		ID:            primitive.NewObjectID(),
-		UserID:        userID,
+		UserID:        uid,
 		Text:          text,
 		DateCreated:   &dateCreated,
 		DateCompleted: nil,
 	}
-	_, err := collection.InsertOne(ctx, item)
+	_, err = collection.InsertOne(ctx, item)
 	if err != nil {
 		return Item{}, err
 	}
 	return item, nil
 }
 
-func (s *MongoStore) GetItemsForUser(ctx context.Context, userID primitive.ObjectID) ([]Item, error) {
+func (s *MongoStore) GetItemsForUser(ctx context.Context, userID string) ([]Item, error) {
 	collection := s.client.Database("checkit").Collection("items")
-	filter := bson.D{{"userId", bson.D{{"$eq", userID}}}}
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	filter := bson.D{{"userId", bson.D{{"$eq", uid}}}}
 	findOptions := options.Find().SetSort(bson.D{{"dateCreated", -1}})
 	cursor, err := collection.Find(ctx, filter, findOptions)
 	if err != nil {
@@ -66,14 +78,14 @@ func (s *MongoStore) GetItemsForUser(ctx context.Context, userID primitive.Objec
 	var items []Item
 	for cursor.Next(ctx) {
 		var item Item
-		err := cursor.Decode(&item)
+		err = cursor.Decode(&item)
 		if err != nil {
 			return nil, err
 		}
 		items = append(items, item)
 	}
 
-	if err := cursor.Err(); err != nil {
+	if err = cursor.Err(); err != nil {
 		return nil, err
 	}
 
@@ -82,8 +94,13 @@ func (s *MongoStore) GetItemsForUser(ctx context.Context, userID primitive.Objec
 	return items, nil
 }
 
-func (s *MongoStore) UpdateItemStatus(ctx context.Context, userID primitive.ObjectID, itemID string, status ItemStatus) error {
+func (s *MongoStore) UpdateItemStatus(ctx context.Context, userID string, itemID string, status ItemStatus) error {
 	collection := s.client.Database("checkit").Collection("items")
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return err
+	}
 
 	oid, err := primitive.ObjectIDFromHex(itemID)
 	if err != nil {
@@ -91,7 +108,7 @@ func (s *MongoStore) UpdateItemStatus(ctx context.Context, userID primitive.Obje
 	}
 	filter := bson.M{
 		"_id":    oid,
-		"userId": userID,
+		"userId": uid,
 	}
 
 	var dateCompleted *time.Time
@@ -111,8 +128,14 @@ func (s *MongoStore) UpdateItemStatus(ctx context.Context, userID primitive.Obje
 	return nil
 }
 
-func (s *MongoStore) DeleteCompletedItems(ctx context.Context, userID primitive.ObjectID) error {
+func (s *MongoStore) DeleteCompletedItems(ctx context.Context, userID string) error {
 	collection := s.client.Database("checkit").Collection("items")
-	_, err := collection.DeleteMany(ctx, bson.M{"userId": userID, "dateCompleted": bson.M{"$ne": nil}})
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = collection.DeleteMany(ctx, bson.M{"userId": uid, "dateCompleted": bson.M{"$ne": nil}})
 	return err
 }

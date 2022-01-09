@@ -4,8 +4,7 @@ import (
 	"context"
 	"encoding/gob"
 	"github.com/alexedwards/scs/v2"
-	"github.com/wrporter/checkit/server/internal/env"
-	"github.com/wrporter/checkit/server/internal/server/store"
+	"github.com/wrporter/checkit/server/internal/lib/env"
 	"net/http"
 	"time"
 )
@@ -14,12 +13,16 @@ const CookieName = "SessionID"
 const ContextKey = "session.context"
 
 type Manager struct {
-	Hub     *hub
-	Manager *scs.SessionManager
+	*scs.SessionManager
+	Hub *hub
+}
+
+type User struct {
+	ID string `json:"id"`
 }
 
 func init() {
-	gob.Register(store.User{})
+	gob.Register(User{})
 }
 
 func NewManager() *Manager {
@@ -42,25 +45,29 @@ func NewManager() *Manager {
 	//}
 	//sessionManager.MemoryStore = redisstore.New(pool)
 
-	hub := newHub()
-	go hub.run()
-	sessionManager.Store = newStore(hub)
+	h := newHub()
+	go h.run()
+	sessionManager.Store = newStore(h)
 
 	return &Manager{
-		Hub:     hub,
-		Manager: sessionManager,
+		SessionManager: sessionManager,
+		Hub:            h,
 	}
 }
 
-func Get(sessionManager *Manager, ctx context.Context) store.User {
-	if sess, ok := sessionManager.Manager.Get(ctx, ContextKey).(store.User); ok {
+func (m *Manager) Put(ctx context.Context, user User) {
+	m.SessionManager.Put(ctx, ContextKey, user)
+}
+
+func (m *Manager) Get(ctx context.Context) User {
+	if sess, ok := m.SessionManager.Get(ctx, ContextKey).(User); ok {
 		return sess
 	}
-	return store.User{}
+	return User{}
 }
 
-func Exists(sessionManager *Manager, ctx context.Context) bool {
-	if _, ok := sessionManager.Manager.Get(ctx, ContextKey).(store.User); ok {
+func (m *Manager) Exists(ctx context.Context) bool {
+	if _, ok := m.SessionManager.Get(ctx, ContextKey).(User); ok {
 		return true
 	}
 	return false

@@ -7,13 +7,20 @@ import { InputProps as StandardInputProps } from '@mui/material/Input/Input';
 interface FormTextFieldProps {
     name: string;
     type: string;
-    label: string;
     rules: Omit<RegisterOptions, 'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'>;
     helperText?: React.ReactNode;
     InputProps?: Partial<StandardInputProps>;
+
+    [props: string]: any;
 }
 
-const FormTextField: React.FC<FormTextFieldProps> = ({ name, type, label, rules, helperText, InputProps }: FormTextFieldProps) => {
+const FormTextField: React.FC<FormTextFieldProps> = ({
+    name,
+    rules,
+    helperText,
+    InputProps,
+    ...rest
+}: FormTextFieldProps) => {
     const { control } = useFormContext();
 
     return (
@@ -21,9 +28,8 @@ const FormTextField: React.FC<FormTextFieldProps> = ({ name, type, label, rules,
             name={name}
             control={control}
             rules={rules}
-            render={({ field: { ref, ...rest }, fieldState }) => {
+            render={({ field: { ref, ...restForm }, fieldState }) => {
                 return <TextField
-                    {...rest}
                     inputRef={ref}
                     error={!!fieldState.error}
                     InputProps={InputProps}
@@ -33,10 +39,10 @@ const FormTextField: React.FC<FormTextFieldProps> = ({ name, type, label, rules,
                             {fieldState.error?.message && <span>{fieldState.error?.message}</span>}
                         </> : null
                     }
-                    label={label}
-                    type={type}
                     variant="standard"
                     fullWidth
+                    {...rest}
+                    {...restForm}
                 />;
             }}
         />

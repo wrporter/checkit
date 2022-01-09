@@ -57,3 +57,14 @@ export function logout() {
         return null;
     });
 }
+
+export function deleteUser() {
+    return fetch('/api/auth/user', {
+        method: 'DELETE',
+    }).then(response => {
+        if (response.status >= 400) {
+            return Promise.reject(response.json());
+        }
+        return null;
+    });
+}

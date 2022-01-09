@@ -4,7 +4,8 @@ import Avatar from '@mui/material/Avatar';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import { useUser } from '../context/user/UserContext';
+import { useUser } from '../context/user';
+import DeleteUserButton from '../components/Profile/DeleteUserButton';
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -23,22 +24,30 @@ export default function Profile() {
 
     return (
         <Box className={classes.container}>
-            <Grid container spacing={2}>
+            <Grid container spacing={4} direction="column">
                 <Grid item>
-                    <Avatar
-                        alt={user.displayName}
-                        src={user.imageUrl || user.image}
-                        className={classes.avatar}
-                    />
-                </Grid>
+                    <Grid container spacing={2}>
+                        <Grid item>
+                            <Avatar
+                                alt={user.displayName}
+                                src={user.imageUrl || user.image}
+                                className={classes.avatar}
+                            />
+                        </Grid>
 
-                <Grid item container xs={12} sm alignItems="center">
-                    <Grid item xs container direction="column" spacing={2}>
-                        <Grid item xs>
-                            <Typography data-testid="Profile.Name" variant="h6">{user.displayName}</Typography>
-                            <Typography data-testid="Profile.Email">{user.email}</Typography>
+                        <Grid item container xs={12} sm alignItems="center">
+                            <Grid item xs container direction="column" spacing={2}>
+                                <Grid item xs>
+                                    <Typography data-testid="Profile.Name" variant="h6">{user.displayName}</Typography>
+                                    <Typography data-testid="Profile.Email">{user.email}</Typography>
+                                </Grid>
+                            </Grid>
                         </Grid>
                     </Grid>
+                </Grid>
+
+                <Grid item>
+                    <DeleteUserButton />
                 </Grid>
             </Grid>
         </Box>

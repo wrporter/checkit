@@ -1,17 +1,16 @@
-package auth
+package oauth
 
 import (
-	"encoding/gob"
-	"github.com/alexedwards/scs/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/wrporter/checkit/server/internal/log"
+	"github.com/wrporter/checkit/server/internal/lib/gin/ginzap"
+	"github.com/wrporter/checkit/server/internal/lib/httputil"
+	"github.com/wrporter/checkit/server/internal/lib/limit"
+	"github.com/wrporter/checkit/server/internal/lib/log"
+	session2 "github.com/wrporter/checkit/server/internal/lib/session"
+	"github.com/wrporter/checkit/server/internal/lib/validate"
 	"github.com/wrporter/checkit/server/internal/server"
-	"github.com/wrporter/checkit/server/internal/server/httputil"
-	"github.com/wrporter/checkit/server/internal/server/limit"
-	"github.com/wrporter/checkit/server/internal/server/session"
 	"github.com/wrporter/checkit/server/internal/server/store"
-	"github.com/wrporter/checkit/server/internal/server/validate"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
@@ -59,50 +58,45 @@ var (
 	}
 )
 
-func init() {
-	gob.Register(UserResponse{})
-}
+//func init() {
+//	gob.Register(UserResponse{})
+//}
 
 // TODO switch from Implicit Grant Flow to Authorization Code Flow
 func RegisterRoutes(server *server.Server) {
 	group := server.Router.Group("/api/auth").Use(limit.WithRateLimit())
 	{
-		group.GET("/oauth/google", GoogleCallback(server.Store, server.SessionManager.Manager))
+		group.GET("/oauth/google", GoogleCallback(server.Store, server.SessionManager))
 		group.GET("/oauth/google/:method", HandleGoogleLogin)
-
-		//group.POST("/oauth/google/login",
-		//	validate.RequestBody(OAuthLoginRequest{}),
-		//	GoogleLogin(server.Store, server.SessionManager.Manager),
-		//)
-		//group.POST("/oauth/google/signup",
-		//	validate.RequestBody(OAuthSignupRequest{}),
-		//	GoogleSignup(server.Store, server.SessionManager.Manager),
-		//)
 
 		group.POST("/login",
 			validate.RequestBody(LoginRequest{}),
-			Login(server.Store, server.SessionManager.Manager),
+			Login(server.Store, server.SessionManager),
 		)
 
 		group.POST("/signup",
 			validate.RequestBody(SignupRequest{}),
-			Signup(server.Store, server.SessionManager.Manager),
+			Signup(server.Store, server.SessionManager),
 		)
 
 		group.POST("/logout",
-			RequireAuth(server.SessionManager.Manager),
+			RequireAuth(server.SessionManager),
 			Logout(server.SessionManager),
 		)
 
-		group.GET("/user", GetUser(server.SessionManager))
+		group.GET("/user", GetUser(server.Store, server.SessionManager))
+		group.DELETE("/user",
+			RequireAuth(server.SessionManager),
+			DeleteUser(server.Store, server.SessionManager),
+		)
 	}
 
 	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))
 }
 
-func Keepalive(sessionManager *session.Manager) gin.HandlerFunc {
+func Keepalive(manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := session.Get(sessionManager, c.Request.Context())
+		sess := manager.Get(c.Request.Context())
 
 		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 		if err != nil {
@@ -110,23 +104,24 @@ func Keepalive(sessionManager *session.Manager) gin.HandlerFunc {
 			return
 		}
 		defer conn.Close()
+		_ = conn.WriteMessage(websocket.TextMessage, []byte("connected"))
 
-		cookie, err := c.Request.Cookie(session.CookieName)
+		cookie, err := c.Request.Cookie(session2.CookieName)
 		if err != nil {
 			log.SC(c.Request.Context()).Error("Failed to get session token cookie", err)
 			return
 		}
-		client := &session.Client{
+		client := &session2.Client{
 			Token:  cookie.Value,
 			Delete: make(chan bool),
 		}
-		sessionManager.Hub.Register <- client
+		manager.Hub.Register <- client
 
 		select {
 		case <-client.Delete:
 			err = conn.WriteMessage(websocket.TextMessage, []byte("session_end"))
-			log.SC(c.Request.Context()).Infof("Session expired for user %s", sess.ID.Hex())
-			sessionManager.Hub.Unregister <- cookie.Value
+			log.SC(c.Request.Context()).Infof("Session expired for user %s", sess.ID)
+			manager.Hub.Unregister <- cookie.Value
 			if err != nil {
 				log.SC(c.Request.Context()).Errorf("Failed to send session end message: %v", err)
 			}
@@ -134,50 +129,84 @@ func Keepalive(sessionManager *session.Manager) gin.HandlerFunc {
 	}
 }
 
-func Logout(manager *session.Manager) gin.HandlerFunc {
+func Logout(manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		sess := session.Get(manager, c.Request.Context())
-		err := manager.Manager.Destroy(c.Request.Context())
+		sess := manager.Get(c.Request.Context())
+		err := manager.Destroy(c.Request.Context())
 		if err != nil {
-			httputil.RespondWithError(c.Writer, c.Request, err)
+			log.SC(c.Request.Context()).Errorf("Failed to logout: %v", err)
+			httputil.InternalError(c, "Failed to logout")
 			return
 		}
-		log.SC(c.Request.Context()).Infof("User logged out - %s", sess.ID.Hex())
+		log.SC(c.Request.Context()).Infof("User logged out - %s", sess.ID)
 		c.Writer.WriteHeader(http.StatusOK)
 	}
 }
 
-func GetUser(sessionManager *session.Manager) gin.HandlerFunc {
+func GetUser(s store.Store, manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !session.Exists(sessionManager, c.Request.Context()) {
-			c.Writer.WriteHeader(http.StatusNoContent)
+		if !manager.Exists(c.Request.Context()) {
+			c.Status(http.StatusNoContent)
 			return
 		}
 
-		user := session.Get(sessionManager, c.Request.Context())
-		httputil.RespondWithJSON(c.Writer, c.Request, user, 200)
+		user := manager.Get(c.Request.Context())
+		u, err := s.GetUser(c.Request.Context(), user.ID)
+		if err != nil {
+			log.SC(c.Request.Context()).Errorf("Failed to get user: %v", err)
+			httputil.InternalError(c, "Failed to get user")
+			return
+		}
+
+		c.JSON(http.StatusOK, UserResponse{
+			Image:       u.ImageURL,
+			DisplayName: u.DisplayName,
+			Email:       u.Email,
+		})
 	}
 }
 
-func Signup(s store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
+func DeleteUser(s store.Store, manager *session2.Manager) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		user := manager.Get(c.Request.Context())
+
+		err := s.DeleteUser(c.Request.Context(), user.ID)
+		if err != nil {
+			log.SC(c.Request.Context()).Errorf("Failed to delete all user data: %v", err)
+			httputil.InternalError(c, "Failed to delete all user data")
+			return
+		}
+
+		err = manager.Destroy(c.Request.Context())
+		if err != nil {
+			log.SC(c.Request.Context()).Errorf("Failed to destroy session: %v", err)
+			httputil.InternalError(c, "Failed to destroy session")
+			return
+		}
+
+		c.Status(http.StatusNoContent)
+	}
+}
+
+func Signup(s store.Store, manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		body := validate.GetRequestBody(c).(*SignupRequest)
 
 		u, err := s.GetUserByEmail(c.Request.Context(), body.Email)
 		if u != nil {
 			log.SC(c.Request.Context()).Errorf("Failed signup for user that already exists: %s", u.ID.Hex())
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPBadRequest("Bad request"))
+			httputil.Error(c, http.StatusBadRequest, "Bad request")
 			return
 		} else if err != nil && err != mongo.ErrNoDocuments {
 			log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err)
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
+			httputil.InternalError(c, "Internal server error")
 			return
 		}
 
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
 		if err != nil {
 			log.SC(c.Request.Context()).Errorf("Failed to hash password: %s", err)
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Internal server error"))
+			httputil.InternalError(c, "Internal server error")
 			return
 		}
 		u, err = s.SaveUser(c.Request.Context(), store.User{
@@ -188,17 +217,19 @@ func Signup(s store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
 			SocialProviders: map[string]bool{"basic": true},
 		})
 		if err != nil {
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError(err.Error()))
+			log.SC(c.Request.Context()).Errorf("Failed to save user: %s", err)
+			httputil.InternalError(c, "Internal server error")
 			return
 		}
 
-		log.SC(c.Request.Context()).Infof("User signed up - %s", u.ID.Hex())
-		sessionManager.Put(c.Request.Context(), session.ContextKey, u)
+		log.SC(c.Request.Context()).Infof("User signed up: %s", u.ID.Hex())
+		manager.Put(c.Request.Context(), session2.User{ID: u.ID.Hex()})
+		ginzap.AddUserID(c, u.ID.Hex())
 		c.Status(http.StatusNoContent)
 	}
 }
 
-func Login(store store.Store, sessionManager *scs.SessionManager) gin.HandlerFunc {
+func Login(store store.Store, manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		body := validate.GetRequestBody(c).(*LoginRequest)
 
@@ -208,12 +239,12 @@ func Login(store store.Store, sessionManager *scs.SessionManager) gin.HandlerFun
 			return
 		} else if err != nil {
 			log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err)
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPInternalServerError("Failed to login"))
+			httputil.Error(c, http.StatusInternalServerError, "Failed to login")
 			return
 		}
 
 		if !u.SocialProviders["basic"] {
-			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "TODO: Allow linking social accounts"))
+			httputil.Error(c, http.StatusUnauthorized, "TODO: Allow linking social accounts")
 			return
 		}
 
@@ -222,20 +253,21 @@ func Login(store store.Store, sessionManager *scs.SessionManager) gin.HandlerFun
 			if err != bcrypt.ErrMismatchedHashAndPassword {
 				log.SC(c.Request.Context()).Errorf("Failed to compare hash and password on login: %s", err)
 			}
-			c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid username or password"))
+			httputil.Error(c, http.StatusUnauthorized, "Invalid username or password")
 			return
 		}
 
-		log.SC(c.Request.Context()).Infof("User logged in - %s", u.ID.Hex())
-		sessionManager.Put(c.Request.Context(), session.ContextKey, u)
+		log.SC(c.Request.Context()).Infof("User logged in: %s", u.ID.Hex())
+		manager.Put(c.Request.Context(), session2.User{ID: u.ID.Hex()})
+		ginzap.AddUserID(c, u.ID.Hex())
 		c.JSON(http.StatusOK, u)
 	}
 }
 
-func RequireAuth(sessionManager *scs.SessionManager) gin.HandlerFunc {
+func RequireAuth(manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !sessionManager.Exists(c.Request.Context(), session.ContextKey) {
-			httputil.RespondWithError(c.Writer, c.Request, httputil.ErrHTTPUnauthorized("401 Unauthorized"))
+		if !manager.Exists(c.Request.Context()) {
+			httputil.Error(c, http.StatusUnauthorized, "Unauthorized")
 			c.Abort()
 		}
 	}
