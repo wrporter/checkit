@@ -97,8 +97,8 @@ export default function DeleteUserButton() {
                             {error && <Alert severity="error">{error}</Alert>}
                         </DialogContent>
                         <DialogActions>
-                            <LoadingButton color="error" type="submit" loading={loading}>
-                                Delete
+                            <LoadingButton color="error" type="submit" loading={loading} variant="outlined">
+                                I understand the consequences, delete this user
                             </LoadingButton>
                         </DialogActions>
                     </form>

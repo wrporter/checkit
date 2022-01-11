@@ -14,7 +14,13 @@ declare module '@mui/styles/defaultTheme' {
     }
 }
 
-const theme = createTheme();
+const theme = createTheme({
+    typography: {
+        button: {
+            textTransform: 'none'
+        }
+    }
+});
 
 const queryClient = new QueryClient({
     defaultOptions: {

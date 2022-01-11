@@ -1,0 +1,15 @@
+version: 2.1
+
+jobs:
+  build:
+    machine: true
+    steps:
+      - checkout
+      - run: .ci/deploy.sh
+      - run: e2e/.ci/build.sh
+      - run: e2e/.ci/run.sh
+      - run: e2e/.ci/copy-artifacts.sh
+      - store_test_results:
+          path: e2e/results
+      - store_artifacts:
+          path: e2e/results
