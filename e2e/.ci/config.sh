@@ -4,8 +4,6 @@ PARENT_APP="checkit"
 APP_NAME="checkit-e2e"
 
 BASE_DIRECTORY="/volume1/docker/"
-SSH_USER="wesp"
-SSH_HOST="roshar"
 DOCKER_REGISTRY="192.168.1.222:5555"
 
 DOCKER_REGISTRY_URL="${DOCKER_REGISTRY_URL:-}"

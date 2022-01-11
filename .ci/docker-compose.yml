@@ -20,8 +20,8 @@ services:
     ports:
       - 9000:9000
     environment:
-      - GOOGLE_OAUTH_CLIENT_ID=TODO
-      - GOOGLE_OAUTH_CLIENT_SECRET=TODO
+      - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
+      - GOOGLE_OAUTH_CLIENT_SECRET=${GOOGLE_OAUTH_CLIENT_SECRET}
       - APP_HOST=
       - SITE_PROTOCOL=https
       - SITE_HOST=checkit.sunbeam.cf

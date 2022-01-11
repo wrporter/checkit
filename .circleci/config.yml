@@ -5,7 +5,7 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: .ci/deploy.sh
+      - run: .ci/deploy-all.sh
       - run: e2e/.ci/build.sh
       - run: e2e/.ci/run.sh
       - run: e2e/.ci/copy-artifacts.sh
@@ -13,3 +13,9 @@ jobs:
           path: e2e/results
       - store_artifacts:
           path: e2e/results
+
+workflows:
+  build:
+    jobs:
+      - build:
+          context: deploy
