@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -e
+set -ex
 source .ci/config.sh
 
 CURRENT_TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")

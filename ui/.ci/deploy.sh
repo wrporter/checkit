@@ -2,7 +2,7 @@
 
 # First run .ci/build.sh to build the image before release.
 
-set -e
+set -ex
 source .ci/config.sh
 
 docker save -o $(pwd)/${APP_NAME}.tar "${TARGET_IMAGE}:latest"
