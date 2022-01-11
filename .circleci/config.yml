@@ -4,17 +4,15 @@ jobs:
   build-server:
     machine:
       image: ubuntu-2004:202010-01
-    working_directory: server
     steps:
       - checkout
-      - run: .ci/build.sh
+      - run: (cd server && .ci/build.sh)
   build-ui:
     machine:
       image: ubuntu-2004:202010-01
-    working_directory: ui
     steps:
       - checkout
-      - run: .ci/build.sh
+      - run: (cd ui && .ci/build.sh)
   deploy:
     machine:
       image: ubuntu-2004:202010-01
@@ -24,30 +22,27 @@ jobs:
   deploy-server:
     machine:
       image: ubuntu-2004:202010-01
-    working_directory: server
     steps:
       - checkout
-      - run: .ci/deploy.sh
+      - run: (cd server && .ci/deploy.sh)
   deploy-ui:
     machine:
       image: ubuntu-2004:202010-01
-    working_directory: ui
     steps:
       - checkout
-      - run: .ci/deploy.sh
+      - run: (cd ui && .ci/deploy.sh)
   verify:
     machine:
       image: ubuntu-2004:202010-01
-    working_directory: e2e
     steps:
       - checkout
-      - run: .ci/build.sh
-      - run: .ci/run.sh
-      - run: .ci/copy-artifacts.sh
+      - run: (cd e2e && .ci/build.sh)
+      - run: (cd e2e && .ci/run.sh)
+      - run: (cd e2e && .ci/copy-artifacts.sh)
       - store_test_results:
-          path: results
+          path: e2e/results
       - store_artifacts:
-          path: results
+          path: e2e/results
 
 workflows:
   build:
