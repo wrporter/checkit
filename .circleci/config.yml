@@ -7,6 +7,7 @@ jobs:
     steps:
       - checkout
       - run: .ci/deploy-all.sh
+      - run: ssh -p ssh ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "docker ps"
       - run:
           working_directory: e2e
           command: .ci/build.sh
