@@ -7,7 +7,7 @@ source .ci/config.sh
 
 docker save -o $(pwd)/${APP_NAME}.tar "${TARGET_IMAGE}:latest"
 
-scp $(pwd)/${APP_NAME}.tar ${SSH_USER}@${SSH_HOST}:${BASE_DIRECTORY}${APP_NAME}.tar
+scp ${SCP_PORT} $(pwd)/${APP_NAME}.tar ${SSH_USER}@${SSH_HOST}:${BASE_DIRECTORY}${APP_NAME}.tar
 rm -f $(pwd)/${APP_NAME}.tar
 
 ssh ${SSH_PORT_OPT} ${SSH_USER}@${SSH_HOST} "docker rm -f ${APP_NAME} || true"
