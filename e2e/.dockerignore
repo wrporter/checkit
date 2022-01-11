@@ -1,0 +1,10 @@
+*
+!cypress
+cypress/videos
+cypress/screenshots
+cypress/results
+!cypress.json
+!cypress.env.json
+!tsconfig.json
+!package.json
+!package-lock.json

@@ -82,6 +82,7 @@ export default function NavBar() {
                                 <Avatar alt={user.displayName} src={user.imageUrl || user.image} />
                             }
                             endIcon={<ArrowDropDownIcon />}
+                            aria-label="Account menu"
                         />
 
                         <Menu
@@ -108,6 +109,7 @@ export default function NavBar() {
                             </MenuItem>
                             <MenuItem
                                 data-testid="AccountMenu.Logout"
+                                component="button"
                                 onClick={handleLogoutClick}
                             >
                                 Logout

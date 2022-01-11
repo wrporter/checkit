@@ -21,7 +21,7 @@ type (
 		Image       string `json:"image" validate:"max=5000"`
 		DisplayName string `json:"displayName" validate:"required,max=30"`
 		Email       string `json:"email" validate:"required,email,max=50"`
-		Password    string `json:"password" validate:"max=64"`
+		Password    string `json:"password" validate:"required,max=64"`
 	}
 
 	OAuthLoginRequest struct {
@@ -38,7 +38,7 @@ type (
 
 	LoginRequest struct {
 		Email    string `json:"email" validate:"required,email,max=50"`
-		Password string `json:"password" validate:"max=64"`
+		Password string `json:"password" validate:"required,max=64"`
 	}
 
 	UserResponse struct {

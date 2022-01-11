@@ -1,14 +1,12 @@
 ###############################################################################
 # Build Static Assets
 ###############################################################################
-FROM alpine:3.12 AS static
+FROM alpine:3.15 AS static
 LABEL maintainer="wesleyrporter@gmail.com"
 
-RUN apk add --no-cache nodejs nodejs-npm
+RUN apk add --no-cache nodejs npm
 
 WORKDIR /src
-
-ARG REACT_APP_GOOGLE_OAUTH_CLIENT_ID
 
 COPY package*.json ./
 RUN npm ci --loglevel=warn
