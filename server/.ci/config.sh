@@ -4,6 +4,7 @@ PARENT_APP="checkit"
 APP_NAME="checkit-api"
 PORT="9000"
 
+SSH_PORT="-p ${SSH_PORT}"
 BASE_DIRECTORY="/volume1/docker/"
 DOCKER_REGISTRY="192.168.1.222:5555"
 
