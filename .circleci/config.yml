@@ -6,7 +6,7 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run: ssh -p ssh ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "docker ps"
+      - run: ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "docker ps"
       - run: .ci/deploy-all.sh
       - run:
           working_directory: e2e
