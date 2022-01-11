@@ -6,9 +6,15 @@ jobs:
     steps:
       - checkout
       - run: .ci/deploy-all.sh
-      - run: e2e/.ci/build.sh
-      - run: e2e/.ci/run.sh
-      - run: e2e/.ci/copy-artifacts.sh
+      - run:
+          working_directory: e2e
+          command: .ci/build.sh
+      - run:
+          working_directory: e2e
+          command: .ci/run.sh
+      - run:
+          working_directory: e2e
+          command: .ci/copy-artifacts.sh
       - store_test_results:
           path: e2e/results
       - store_artifacts:
