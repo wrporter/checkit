@@ -4,10 +4,6 @@ jobs:
   build:
     machine: true
     steps:
-      - run:
-          name: Install git for checkout
-          command: |
-            apt-get update && apt-get --no-install-recommends -y install git
       - checkout
       - run: .ci/deploy-all.sh
       - run:
