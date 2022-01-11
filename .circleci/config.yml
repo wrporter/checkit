@@ -1,29 +1,79 @@
 version: 2.1
 
 jobs:
-  build:
+  build-server:
+    machine:
+      image: ubuntu-2004:202010-01
+    working_directory: server
+    steps:
+      - checkout
+      - run: .ci/build.sh
+  build-ui:
+    machine:
+      image: ubuntu-2004:202010-01
+    working_directory: ui
+    steps:
+      - checkout
+      - run: .ci/build.sh
+  deploy:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run: ssh -p ${SSH_PORT} ${SSH_USER}@${SSH_HOST} "docker ps"
-      - run: .ci/deploy-all.sh
-      - run:
-          working_directory: e2e
-          command: .ci/build.sh
-      - run:
-          working_directory: e2e
-          command: .ci/run.sh
-      - run:
-          working_directory: e2e
-          command: .ci/copy-artifacts.sh
+      - run: .ci/deploy.sh
+  deploy-server:
+    machine:
+      image: ubuntu-2004:202010-01
+    working_directory: server
+    steps:
+      - checkout
+      - run: .ci/deploy.sh
+  deploy-ui:
+    machine:
+      image: ubuntu-2004:202010-01
+    working_directory: ui
+    steps:
+      - checkout
+      - run: .ci/deploy.sh
+  verify:
+    machine:
+      image: ubuntu-2004:202010-01
+    working_directory: e2e
+    steps:
+      - checkout
+      - run: .ci/build.sh
+      - run: .ci/run.sh
+      - run: .ci/copy-artifacts.sh
       - store_test_results:
-          path: e2e/results
+          path: results
       - store_artifacts:
-          path: e2e/results
+          path: results
 
 workflows:
   build:
     jobs:
-      - build:
+      - build-server:
+          context: deploy
+      - build-ui:
+          context: deploy
+      - deploy:
+          requires:
+            - build-ui
+            - build-server
+          context: deploy
+      - deploy-server:
+          requires:
+            - build-ui
+            - build-server
+          context: deploy
+      - deploy-ui:
+          requires:
+            - build-ui
+            - build-server
+          context: deploy
+      - verify:
+          requires:
+            - deploy
+            - deploy-ui
+            - deploy-server
           context: deploy
