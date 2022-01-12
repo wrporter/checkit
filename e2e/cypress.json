@@ -1,6 +1,5 @@
 {
   "projectId": "checkit",
   "baseUrl": "https://checkit.sunbeam.cf",
-  "retries": 1,
-  "video": false
+  "retries": 1
 }

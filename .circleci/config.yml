@@ -9,3 +9,7 @@ workflows:
       - cypress/run:
           working_directory: e2e
           cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
+          post-steps:
+            - store_test_results:
+                path: cypress/results
+          store_artifacts: true
