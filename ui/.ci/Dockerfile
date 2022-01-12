@@ -11,6 +11,7 @@ WORKDIR /src
 COPY package*.json ./
 RUN npm ci --loglevel=warn
 
+COPY .eslintrc.yml ./
 COPY tsconfig.json ./
 COPY src src
 COPY public public
