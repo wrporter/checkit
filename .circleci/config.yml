@@ -7,8 +7,6 @@ workflows:
   build:
     jobs:
       - cypress/run:
-          requires:
-            - cypress/install
           working_directory: e2e
           record: true
           parallel: true
