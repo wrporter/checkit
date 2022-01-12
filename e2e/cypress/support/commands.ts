@@ -13,6 +13,13 @@ Cypress.Commands.add('signup', (name: string, email: string, password: string) =
         },
         failOnStatusCode: false,
     })
+
+    cy.getCookie('SessionID')
+        .then((cookie) => {
+            if (cookie) {
+                cy.setCookie(cookie.name, cookie.value)
+            }
+        })
 })
 
 Cypress.Commands.add('logout', () => {
@@ -28,6 +35,13 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
             password,
         }
     })
+
+    cy.getCookie('SessionID')
+        .then((cookie) => {
+            if (cookie) {
+                cy.setCookie(cookie.name, cookie.value)
+            }
+        })
 })
 
 Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
@@ -53,7 +67,6 @@ Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
                 })
             }
         })
-
 })
 
 Cypress.Commands.add('typeIfText', (label: string | RegExp, value: string): Chainable<JQuery> | undefined => {
