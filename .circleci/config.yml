@@ -54,8 +54,8 @@ workflows:
           cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
           post-steps:
             - store_test_results:
-                path: cypress/results
+                path: e2e/cypress/results
             - store_artifacts:
-                path: cypress/screenshots
+                path: e2e/cypress/screenshots
             - store_artifacts:
-                path: cypress/videos
+                path: e2e/cypress/videos
