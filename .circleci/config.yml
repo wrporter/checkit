@@ -6,7 +6,11 @@ orbs:
 workflows:
   build:
     jobs:
+      - cypress/install:
+          working_directory: e2e
       - cypress/run:
+          requires:
+            - cypress/install
           working_directory: e2e
           record: true
           parallel: true
