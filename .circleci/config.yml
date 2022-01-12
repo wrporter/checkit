@@ -6,14 +6,5 @@ orbs:
 workflows:
   build:
     jobs:
-      - cypress/install:
-          working_directory: e2e
       - cypress/run:
-          requires:
-            - cypress/install
           working_directory: e2e
-          pre-steps:
-            - run: ls
-          parallel: true
-          parallelism: 4
-          group: 'all tests'
