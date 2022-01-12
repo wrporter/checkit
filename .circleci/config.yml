@@ -1,44 +1,33 @@
 version: 2.1
 
 jobs:
-  build-server:
+  build-deploy-verify:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run: (cd server && .ci/build.sh)
-  build-ui:
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
-      - checkout
-      - run: (cd ui && .ci/build.sh)
-  deploy:
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
-      - checkout
+      - run:
+          working_directory: server
+          command: .ci/build.sh
+      - run:
+          working_directory: ui
+          command: .ci/build.sh
       - run: .ci/deploy.sh
-  deploy-server:
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
-      - checkout
-      - run: (cd server && .ci/deploy.sh)
-  deploy-ui:
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
-      - checkout
-      - run: (cd ui && .ci/deploy.sh)
-  verify:
-    machine:
-      image: ubuntu-2004:202010-01
-    steps:
-      - checkout
-      - run: (cd e2e && .ci/build.sh)
-      - run: (cd e2e && .ci/run.sh)
-      - run: (cd e2e && .ci/copy-artifacts.sh)
+      - run:
+          working_directory: server
+          command: .ci/deploy.sh
+      - run:
+          working_directory: ui
+          command: .ci/deploy.sh
+      - run:
+          working_directory: e2e
+          command: .ci/build.sh
+      - run:
+          working_directory: e2e
+          command: .ci/run.sh
+      - run:
+          working_directory: e2e
+          command: .ci/copy-artifacts.sh
       - store_test_results:
           path: e2e/results
       - store_artifacts:
@@ -47,28 +36,5 @@ jobs:
 workflows:
   build:
     jobs:
-      - build-server:
-          context: deploy
-      - build-ui:
-          context: deploy
-      - deploy:
-          requires:
-            - build-ui
-            - build-server
-          context: deploy
-      - deploy-server:
-          requires:
-            - build-ui
-            - build-server
-          context: deploy
-      - deploy-ui:
-          requires:
-            - build-ui
-            - build-server
-          context: deploy
-      - verify:
-          requires:
-            - deploy
-            - deploy-ui
-            - deploy-server
+      - build-deploy-verify:
           context: deploy
