@@ -4,9 +4,8 @@ orbs:
   cypress: cypress-io/cypress@1.29.0
 
 workflows:
-  build-deploy:
+  build:
     jobs:
-      - cypress/install:
       - cypress/run:
           requires:
             - cypress/install
