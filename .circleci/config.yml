@@ -3,10 +3,53 @@ version: 2.1
 orbs:
   cypress: cypress-io/cypress@1.29.0
 
+jobs:
+  build-deploy-server:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build
+          working_directory: server
+          command: .ci/build.sh
+      - run:
+          name: Deploy
+          working_directory: server
+          command: .ci/deploy.sh
+  build-deploy-ui:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          name: Build
+          working_directory: ui
+          command: .ci/build.sh
+      - run:
+          name: Deploy
+          working_directory: ui
+          command: .ci/deploy.sh
+  deploy-docker-compose:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run: .ci/deploy.sh
+
 workflows:
   build:
     jobs:
+      - deploy-docker-compose:
+          context: deploy
+      - build-deploy-server:
+          context: deploy
+      - build-deploy-ui:
+          context: deploy
       - cypress/run:
+          requires:
+            - deploy-docker-compose
+            - build-deploy-server
+            - build-deploy-ui
           working_directory: e2e
           cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
           post-steps:
@@ -16,4 +59,3 @@ workflows:
                 path: cypress/screenshots
             - store_artifacts:
                 path: cypress/videos
-#          store_artifacts: true
