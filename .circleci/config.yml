@@ -13,8 +13,7 @@ workflows:
             - cypress/install
           working_directory: e2e
           pre-steps:
-            - run: ls -A1
-          record: true
+            - run: ls
           parallel: true
           parallelism: 4
           group: 'all tests'
