@@ -26,7 +26,7 @@ func buildLimit() *limiter.Limiter {
 
 	return tollbooth.NewLimiter(5, options).
 		SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"}).
-		SetBurst(10).
+		SetBurst(50).
 		SetMessageContentType("application/json").
 		SetMessage(string(responseBody))
 }
