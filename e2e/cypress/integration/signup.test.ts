@@ -1,6 +1,5 @@
 function signup(name: string, email: string, password: string) {
-    cy.visit('')
-    cy.findByRole('link', { name: 'Sign up' }).click()
+    cy.visit('/signup')
 
     cy.typeIfText('Display Name', name)
     cy.typeIfText('Email', email)
