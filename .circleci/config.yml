@@ -9,5 +9,3 @@ workflows:
       - cypress/run:
           working_directory: e2e
           cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
-          parallel: true
-          parallelism: 4
