@@ -51,6 +51,7 @@ describe('Sign up', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
             cy.findByRole('textbox', { name: 'What do you want to do?' }).should('exist')
             cy.logout()
+            cy.findByRole('button', { name: 'Get started' }).should('exist')
 
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 

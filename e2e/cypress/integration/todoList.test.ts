@@ -4,7 +4,7 @@ function clickControl(control: string) {
 }
 
 function addItem(item: string) {
-    cy.findByRole('textbox').type(item).type('{enter}')
+    cy.findByRole('textbox').type(`${item}{enter}`)
 }
 
 describe('Todo List', () => {
