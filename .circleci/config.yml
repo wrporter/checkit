@@ -12,4 +12,8 @@ workflows:
           post-steps:
             - store_test_results:
                 path: cypress/results
-          store_artifacts: true
+            - store_artifacts:
+                path: cypress/screenshots
+            - store_artifacts:
+                path: cypress/videos
+#          store_artifacts: true
