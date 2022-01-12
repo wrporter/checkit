@@ -51,6 +51,8 @@ jobs:
           path: e2e/results
       - store_artifacts:
           path: e2e/results
+orbs:
+  cypress: cypress-io/cypress@1.29.0
 
 workflows:
   build-deploy:
@@ -61,8 +63,17 @@ workflows:
           context: deploy
       - build-deploy-ui:
           context: deploy
-      - verify-e2e:
+      - cypress/install:
+          build: 'npm run build'
           requires:
             - deploy-docker-compose
             - build-deploy-server
             - build-deploy-ui
+      - cypress/run:
+          requires:
+            - cypress/install
+          working_directory: e2e
+          record: true
+          parallel: true
+          parallelism: 4
+          group: 'all tests'

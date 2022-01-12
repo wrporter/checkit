@@ -2,6 +2,6 @@
 
 source .ci/config.sh
 
-docker run \
+docker run -t \
 	--name=${APP_NAME} \
 	${TARGET_IMAGE}:${VERSION}
