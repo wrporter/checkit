@@ -1,5 +1,9 @@
 {
   "projectId": "checkit",
   "baseUrl": "https://checkit.sunbeam.cf",
-  "retries": 1
+  "retries": 1,
+  "reporterOptions": {
+    "mochaFile": "cypress/results/tests-[hash].xml",
+    "toConsole": true
+  }
 }
