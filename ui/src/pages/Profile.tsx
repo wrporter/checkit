@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 import { useUser } from '../context/user';
 import DeleteUserButton from '../components/Profile/DeleteUserButton';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     container: {
         padding: 32,
     },
@@ -36,10 +36,23 @@ export default function Profile() {
                         </Grid>
 
                         <Grid item container xs={12} sm alignItems="center">
-                            <Grid item xs container direction="column" spacing={2}>
+                            <Grid
+                                item
+                                xs
+                                container
+                                direction="column"
+                                spacing={2}
+                            >
                                 <Grid item xs>
-                                    <Typography data-testid="Profile.Name" variant="h6">{user.displayName}</Typography>
-                                    <Typography data-testid="Profile.Email">{user.email}</Typography>
+                                    <Typography
+                                        data-testid="Profile.Name"
+                                        variant="h6"
+                                    >
+                                        {user.displayName}
+                                    </Typography>
+                                    <Typography data-testid="Profile.Email">
+                                        {user.email}
+                                    </Typography>
                                 </Grid>
                             </Grid>
                         </Grid>

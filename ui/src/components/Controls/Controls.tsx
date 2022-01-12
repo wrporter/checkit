@@ -7,23 +7,23 @@ import SpeedDialAction from '@mui/material/SpeedDialAction';
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { deleteCompletedItems } from '../../services/ItemService';
 import { Snackbar } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
+import { deleteCompletedItems } from '../../services/ItemService';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles({
     tooltip: {
         whiteSpace: 'nowrap',
         backgroundColor: 'rgba(97, 97, 97, 0.9)',
         color: '#ffffff',
     },
-}));
+});
 
 interface ControlsProps {
-    className?: string,
-    showCompleted: boolean,
-    onShowCompletedChange: (showCompleted: boolean) => void,
-    onDeleteCompleted: () => void,
+    className?: string;
+    showCompleted: boolean;
+    onShowCompletedChange: (showCompleted: boolean) => void;
+    onDeleteCompleted: () => void;
 }
 
 export default function Controls({
@@ -51,7 +51,7 @@ export default function Controls({
 
     const handleDeleteCompletedItems = () => {
         handleClose();
-        deleteCompletedItems().then(response => {
+        deleteCompletedItems().then((response) => {
             if (response.status >= 400) {
                 setDeleteError(
                     'Failed to delete completed items. Please try again.'
@@ -93,7 +93,7 @@ export default function Controls({
                     title="Delete Completed Items"
                     tooltipTitle="Delete Completed Items"
                     onClick={handleDeleteCompletedItems}
-                    tooltipOpen={true}
+                    tooltipOpen
                     classes={{ staticTooltipLabel: classes.tooltip }}
                 />
                 <SpeedDialAction
@@ -109,7 +109,7 @@ export default function Controls({
                     title={getShowTitle()}
                     tooltipTitle={getShowTitle()}
                     onClick={handleShowCompletedClick}
-                    tooltipOpen={true}
+                    tooltipOpen
                     classes={{ staticTooltipLabel: classes.tooltip }}
                 />
             </SpeedDial>

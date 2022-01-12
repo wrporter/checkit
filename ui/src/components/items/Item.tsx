@@ -2,14 +2,14 @@ import React, { ChangeEventHandler } from 'react';
 import Checkbox from '@mui/material/Checkbox';
 import makeStyles from '@mui/styles/makeStyles';
 import classNames from 'classnames';
-import * as itemService from '../../services/ItemService';
 import { ListItemButton, Snackbar } from '@mui/material';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Collapse from '@mui/material/Collapse';
+import * as itemService from '../../services/ItemService';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     checked: {
         textDecoration: 'line-through',
         backgroundColor: theme.palette.grey['300'],
@@ -37,7 +37,7 @@ export default function Item({
     const classes = useStyles();
     const [checked, setChecked] = React.useState(!!dateCompleted);
     const [error, setError] = React.useState('');
-    const labelId = `checkbox-item-label-${id}`
+    const labelId = `checkbox-item-label-${id}`;
 
     const handleToggle = (checked: boolean) => () => {
         setChecked(checked);
@@ -50,14 +50,14 @@ export default function Item({
                     onChange(id);
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 setChecked(!checked);
                 setError(err.message);
             });
     };
 
     const handleChange: ChangeEventHandler<HTMLInputElement> = (event) => {
-        const checked = event.target.checked;
+        const { checked } = event.target;
         handleToggle(checked);
     };
 
@@ -75,7 +75,10 @@ export default function Item({
                 })}
                 disablePadding
             >
-                <ListItemButton role={undefined} onClick={handleToggle(!checked)}>
+                <ListItemButton
+                    role={undefined}
+                    onClick={handleToggle(!checked)}
+                >
                     <ListItemIcon>
                         <Checkbox
                             edge="start"

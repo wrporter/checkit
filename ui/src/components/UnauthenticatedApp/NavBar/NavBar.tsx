@@ -5,10 +5,10 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
-import Logo from '../../Logo';
 import { Box } from '@mui/material';
+import Logo from '../../Logo';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     bar: {
         backgroundColor: theme.palette.background.default,
         boxShadow: 'none',
@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
     },
     loginButton: {
         marginRight: theme.spacing(1),
-    }
+    },
 }));
 
 export default function NavBar() {
@@ -42,11 +42,7 @@ export default function NavBar() {
     return (
         <AppBar position="static" className={classes.bar}>
             <Toolbar className={classes.toolbar}>
-                <Link
-                    data-testid="Home"
-                    to="/"
-                    className={classes.homeLink}
-                >
+                <Link data-testid="Home" to="/" className={classes.homeLink}>
                     <Logo className={classes.logo} />
                     <Typography variant="h6">Checkit</Typography>
                 </Link>
@@ -57,13 +53,13 @@ export default function NavBar() {
                         component={Link}
                         to="/login"
                         variant="contained"
-                    >Log in</Button>
+                    >
+                        Log in
+                    </Button>
 
-                    <Button
-                        component={Link}
-                        to="/signup"
-                        variant="outlined"
-                    >Sign up</Button>
+                    <Button component={Link} to="/signup" variant="outlined">
+                        Sign up
+                    </Button>
                 </Box>
             </Toolbar>
         </AppBar>

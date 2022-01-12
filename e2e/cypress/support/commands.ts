@@ -19,8 +19,8 @@ Cypress.Commands.add('logout', () => {
     cy.clearCookies()
 })
 
-Cypress.Commands.add('login', (email: string, password: string): Chainable<Response<void>> => {
-    return cy.request({
+Cypress.Commands.add('login', (email: string, password: string): void => {
+    cy.request({
         url: '/api/auth/login',
         method: 'POST',
         body: {
@@ -30,7 +30,7 @@ Cypress.Commands.add('login', (email: string, password: string): Chainable<Respo
     })
 })
 
-Cypress.Commands.add('cleanupUser', (email: string, password: string) => {
+Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
     cy.request({
         url: '/api/auth/login',
         method: 'POST',
@@ -41,23 +41,19 @@ Cypress.Commands.add('cleanupUser', (email: string, password: string) => {
         failOnStatusCode: false,
     })
 
-    cy.request({
-        url: '/api/auth/user',
-        method: 'DELETE',
-        failOnStatusCode: false,
-    })
-})
+    cy.getCookie('SessionID')
+        .then((cookie) => {
+            if (cookie) {
+                cy.setCookie(cookie.name, cookie.value)
 
-Cypress.Commands.add('deleteUser', () => {
-    cy.getCookie('SessionID').then((sessionCookie) => {
-        if (sessionCookie) {
-            cy.request({
-                method: 'DELETE',
-                url: '/api/auth/user'
-            })
-        }
-        cy.clearCookie('SessionID')
-    })
+                cy.request({
+                    url: '/api/auth/user',
+                    method: 'DELETE',
+                    failOnStatusCode: false,
+                })
+            }
+        })
+
 })
 
 Cypress.Commands.add('typeIfText', (label: string | RegExp, value: string): Chainable<JQuery> | undefined => {

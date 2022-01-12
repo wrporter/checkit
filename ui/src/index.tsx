@@ -1,25 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { CssBaseline, Theme } from '@mui/material';
-import { createTheme, StyledEngineProvider, ThemeProvider } from '@mui/material/styles';
+import {
+    createTheme,
+    StyledEngineProvider,
+    ThemeProvider,
+} from '@mui/material/styles';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { BrowserRouter } from 'react-router-dom';
 import { AuthenticationProvider, UserProvider } from './context/user';
 import App from './components/App';
 import './styles.css';
-import { BrowserRouter } from 'react-router-dom';
 
 declare module '@mui/styles/defaultTheme' {
     // eslint-disable-next-line @typescript-eslint/no-empty-interface
-    interface DefaultTheme extends Theme {
-    }
+    interface DefaultTheme extends Theme {}
 }
 
 const theme = createTheme({
     typography: {
         button: {
-            textTransform: 'none'
-        }
-    }
+            textTransform: 'none',
+        },
+    },
 });
 
 const queryClient = new QueryClient({

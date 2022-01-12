@@ -1,12 +1,11 @@
 import React, { createContext, useContext } from 'react';
-import * as PropTypes from 'prop-types';
+import { useQuery } from 'react-query';
+import { red } from '@mui/material/colors';
+import { useNavigate } from 'react-router-dom';
 import * as authService from '../../services/UserService';
 import { getUser } from '../../services/UserService';
 import FullPageSpinner from '../../components/utils/FullPageSpinner';
-import { useQuery } from 'react-query';
-import { red } from '@mui/material/colors';
 import { User } from './UserContext';
-import { useNavigate } from 'react-router-dom';
 
 export interface Authentication {
     user?: User;
@@ -16,12 +15,13 @@ export interface Authentication {
     refetch: () => void;
 }
 
-const AuthenticationContext = createContext<Authentication | undefined>(undefined);
+const AuthenticationContext = createContext<Authentication | undefined>(
+    undefined
+);
 
 function AuthenticationProvider({ ...rest }) {
-    const [firstAttemptFinished, setFirstAttemptFinished] = React.useState(
-        false
-    );
+    const [firstAttemptFinished, setFirstAttemptFinished] =
+        React.useState(false);
     const {
         data: user,
         error,
@@ -37,6 +37,32 @@ function AuthenticationProvider({ ...rest }) {
         }
     }, [isFetched]);
 
+    const value = React.useMemo(() => {
+        async function onLogin(loginRequest: Promise<void>) {
+            await loginRequest;
+            await refetch();
+            navigate('/', { replace: true });
+        }
+        async function register(signupRequest: Promise<void>) {
+            await signupRequest;
+            await refetch();
+            navigate('/', { replace: true });
+        }
+        async function logout() {
+            await authService.logout();
+            await refetch();
+            navigate('/');
+        }
+
+        return {
+            user,
+            onLogin,
+            logout,
+            register,
+            refetch,
+        };
+    }, [user, refetch, navigate]);
+
     if (!firstAttemptFinished) {
         if (isLoading) {
             return <FullPageSpinner />;
@@ -44,39 +70,15 @@ function AuthenticationProvider({ ...rest }) {
         if (error) {
             return (
                 <div style={{ color: red['900'] }}>
-                    <p>Uh oh... There's a problem. Try refreshing the app.</p>
+                    <p>Uh oh... There is a problem. Try refreshing the app.</p>
                     <pre>{error.message}</pre>
                 </div>
             );
         }
     }
 
-    const onLogin = async (loginRequest: Promise<void>) => {
-        await loginRequest;
-        await refetch();
-        navigate('/', { replace: true });
-    }
-    const register = async (signupRequest: Promise<void>) => {
-        await signupRequest;
-        await refetch();
-        navigate('/', { replace: true });
-    };
-    const logout = () => authService.logout().then(async () => {
-        await refetch();
-        navigate('/');
-    });
-
-    return (
-        <AuthenticationContext.Provider
-            value={{ user, onLogin: onLogin, logout, register, refetch }}
-            {...rest}
-        />
-    );
+    return <AuthenticationContext.Provider value={value} {...rest} />;
 }
-
-AuthenticationProvider.propTypes = {
-    children: PropTypes.node.isRequired,
-};
 
 function useAuthentication() {
     const context = useContext(AuthenticationContext);

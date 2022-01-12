@@ -4,7 +4,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Button, Container, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     container: {
         marginTop: theme.spacing(8),
     },
@@ -22,7 +22,8 @@ export default function NotFound() {
                 404: Page Not Found
             </Typography>
             <Typography className={classes.spacer} align="center">
-                This page checked out! Looks like you may have landed here by mistake.
+                This page checked out! Looks like you may have landed here by
+                mistake.
             </Typography>
             <Box textAlign="center" className={classes.spacer}>
                 <Button component={Link} variant="contained" to="/">

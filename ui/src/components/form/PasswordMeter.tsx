@@ -12,8 +12,8 @@ const useStyles = makeStyles({
     },
     bar: ({ color }: { color: string }) => ({
         borderRadius: 5,
-        background: color
-    })
+        background: color,
+    }),
 });
 
 interface PasswordMeterProps {
@@ -26,10 +26,13 @@ const colors: { [key: number]: string } = {
     60: 'orange',
     80: 'yellowgreen',
     100: 'green',
-}
+};
 
-const PasswordMeter: React.FC<PasswordMeterProps> = ({ password }: PasswordMeterProps) => {
-    const { score, feedback: { warning } } = zxcvbn(password);
+export default function PasswordMeter({ password }: PasswordMeterProps) {
+    const {
+        score,
+        feedback: { warning },
+    } = zxcvbn(password);
     let progress = 0;
     if (password.length > 0) {
         progress = Math.max((score + 1) * 20, 20);
@@ -47,5 +50,3 @@ const PasswordMeter: React.FC<PasswordMeterProps> = ({ password }: PasswordMeter
         </>
     );
 }
-
-export default PasswordMeter;

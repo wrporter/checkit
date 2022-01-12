@@ -8,18 +8,18 @@ import {
     DialogContent,
     DialogContentText,
     DialogTitle,
-    useMediaQuery
+    useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/styles';
 import { LoadingButton } from '@mui/lab';
 import { useNavigate } from 'react-router-dom';
+import { FormProvider, useForm } from 'react-hook-form';
 import { deleteUser } from '../../services/UserService';
 import { useUser } from '../../context/user';
-import { FormProvider, useForm } from 'react-hook-form';
 import FormTextField from '../form/FormTextField';
 
 function Bold({ children }: { children: React.ReactNode }) {
-    return <Box sx={{ fontWeight: 'bold', display: 'inline' }}>{children}</Box>
+    return <Box sx={{ fontWeight: 'bold', display: 'inline' }}>{children}</Box>;
 }
 
 export default function DeleteUserButton() {
@@ -38,7 +38,9 @@ export default function DeleteUserButton() {
             setOpen(false);
             navigate('/', { replace: true });
         } catch (e) {
-            setError('We failed to delete all user data for this account, please try again.');
+            setError(
+                'We failed to delete all user data for this account, please try again.'
+            );
         }
         setLoading(false);
     };
@@ -47,7 +49,7 @@ export default function DeleteUserButton() {
         shouldUnregister: true,
         defaultValues: {
             confirm: '',
-        }
+        },
     });
 
     return (
@@ -67,16 +69,22 @@ export default function DeleteUserButton() {
                 aria-labelledby="responsive-dialog-title"
             >
                 <FormProvider {...methods}>
-                    <form onSubmit={methods.handleSubmit(handleDelete)} noValidate>
+                    <form
+                        onSubmit={methods.handleSubmit(handleDelete)}
+                        noValidate
+                    >
                         <DialogTitle id="responsive-dialog-title">
                             Delete user and all data
                         </DialogTitle>
                         <DialogContent>
                             <DialogContentText>
-                                Are you absolutely sure? This action <Bold>cannot</Bold> be
-                                undone. Deleting this user account will do the following:
+                                Are you absolutely sure? This action{' '}
+                                <Bold>cannot</Bold> be undone. Deleting this
+                                user account will do the following:
                                 <ul>
-                                    <li>Delete all data created by this user.</li>
+                                    <li>
+                                        Delete all data created by this user.
+                                    </li>
                                     <li>Log out the user.</li>
                                     <li>Navigate to the site home page.</li>
                                 </ul>
@@ -88,16 +96,28 @@ export default function DeleteUserButton() {
                                 variant="outlined"
                                 name="confirm"
                                 type="email"
-                                label={<>Type <Bold>{user.email}</Bold> to confirm.</>}
+                                label={
+                                    <>
+                                        Type <Bold>{user.email}</Bold> to
+                                        confirm.
+                                    </>
+                                }
                                 rules={{
-                                    validate: (v) => v === user.email || `Please type ${user.email} to confirm.`
+                                    validate: (v) =>
+                                        v === user.email ||
+                                        `Please type ${user.email} to confirm.`,
                                 }}
                             />
 
                             {error && <Alert severity="error">{error}</Alert>}
                         </DialogContent>
                         <DialogActions>
-                            <LoadingButton color="error" type="submit" loading={loading} variant="outlined">
+                            <LoadingButton
+                                color="error"
+                                type="submit"
+                                loading={loading}
+                                variant="outlined"
+                            >
                                 I understand the consequences, delete this user
                             </LoadingButton>
                         </DialogActions>

@@ -3,15 +3,15 @@ import Typography from '@mui/material/Typography';
 import { TextField } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
-import { getItems, Item as ItemType, saveItem } from '../services/ItemService';
 import CircularProgress from '@mui/material/CircularProgress';
 import List from '@mui/material/List';
+import { useQuery } from 'react-query';
+import { getItems, Item as ItemType, saveItem } from '../services/ItemService';
 import Controls from '../components/Controls/Controls';
 import Item from '../components/items/Item';
-import { useQuery } from 'react-query';
-import { useLocalStorage } from '../hooks';
+import useLocalStorage from '../hooks/useLocalStorage';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     container: {
         padding: 32,
     },
@@ -30,28 +30,33 @@ const useStyles = makeStyles(theme => ({
 
 export default function Home() {
     const classes = useStyles();
-    const [showCompleted, setShowCompleted] = useLocalStorage('showCompleted', false)
+    const [showCompleted, setShowCompleted] = useLocalStorage(
+        'showCompleted',
+        false
+    );
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState<ItemType[]>([]);
-    const { data, error, isLoading } = useQuery('items', getItems, { refetchOnMount: 'always' });
+    const { data, error, isLoading } = useQuery('items', getItems, {
+        refetchOnMount: 'always',
+    });
 
     React.useEffect(() => {
         if (data?.items) {
             setItems(data.items);
         }
-    }, [data])
+    }, [data]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         setSaveError('');
         if (e.key === 'Enter' && value) {
             const item = { text: value };
             saveItem(item)
-                .then(savedItem => {
+                .then((savedItem) => {
                     setItems([savedItem].concat(items));
                     setValue('');
                 })
-                .catch(err => setSaveError(err.message));
+                .catch((err) => setSaveError(err.message));
         }
     };
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -62,12 +67,12 @@ export default function Home() {
         setShowCompleted(value);
     };
     const handleDeleteCompleted = () => {
-        const incompleteItems = items.filter(item => !item.dateCompleted);
+        const incompleteItems = items.filter((item) => !item.dateCompleted);
         setItems(incompleteItems);
     };
     const handleItemChange = (itemId: string, dateCompleted?: string) => {
         // TODO Clean this up. This logic of mutating a value within the items list is a hack.
-        const item = items.find(item => item.id === itemId);
+        const item = items.find((item) => item.id === itemId);
         if (item) {
             item.dateCompleted = dateCompleted;
         }
@@ -82,7 +87,7 @@ export default function Home() {
                 fullWidth
                 inputProps={{
                     onKeyDown: handleKeyDown,
-                    'data-testid': "Home.AddItemTextBox"
+                    'data-testid': 'Home.AddItemTextBox',
                 }}
                 value={value}
                 onChange={handleChange}
@@ -93,13 +98,11 @@ export default function Home() {
                 <Typography style={{ color: 'red' }}>{saveError}</Typography>
             ) : null}
 
-            <List>
-                {isLoading ? (
-                    <CircularProgress />
-                ) : error ? (
-                    'Failed to load!'
-                ) : items ? (
-                    items.map(item => (
+            {isLoading && <CircularProgress />}
+            {error && 'Failed to load!'}
+            {items && (
+                <List>
+                    {items.map((item) => (
                         <Item
                             key={item.id}
                             id={item.id}
@@ -108,9 +111,9 @@ export default function Home() {
                             showCompleted={showCompleted}
                             onChange={handleItemChange}
                         />
-                    ))
-                ) : null}
-            </List>
+                    ))}
+                </List>
+            )}
 
             <Controls
                 className={classes.controls}

@@ -267,7 +267,7 @@ func Login(store store.Store, manager *session2.Manager) gin.HandlerFunc {
 func RequireAuth(manager *session2.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !manager.Exists(c.Request.Context()) {
-			httputil.Error(c, http.StatusUnauthorized, "Unauthorized")
+			httputil.Error(c, http.StatusUnauthorized, "Session expired")
 			c.Abort()
 		}
 	}

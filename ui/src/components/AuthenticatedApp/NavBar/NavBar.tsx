@@ -9,11 +9,11 @@ import Button from '@mui/material/Button';
 import { Menu } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { useQueryClient } from 'react-query';
 import { useAuthentication } from '../../../context/user';
 import Logo from '../../Logo';
-import { useQueryClient } from 'react-query';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
     bar: {
         backgroundColor: 'white',
         boxShadow: 'none',
@@ -46,9 +46,13 @@ export default function NavBar() {
     const classes = useStyles();
     const { user, logout } = useAuthentication();
 
-    const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null);
+    const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(
+        null
+    );
     const open = Boolean(anchorEl);
-    const handleAccountMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleAccountMenuClick = (
+        event: React.MouseEvent<HTMLButtonElement>
+    ) => {
         setAnchorEl(event.currentTarget);
     };
     const handleClose = () => {
@@ -63,11 +67,7 @@ export default function NavBar() {
     return (
         <AppBar position="static" className={classes.bar}>
             <Toolbar className={classes.toolbar}>
-                <Link
-                    data-testid="Home"
-                    to="/"
-                    className={classes.homeLink}
-                >
+                <Link data-testid="Home" to="/" className={classes.homeLink}>
                     <Logo className={classes.logo} />
                     <Typography variant="h6">Checkit</Typography>
                 </Link>
@@ -79,7 +79,10 @@ export default function NavBar() {
                             onClick={handleAccountMenuClick}
                             className={classes.accountButton}
                             startIcon={
-                                <Avatar alt={user.displayName} src={user.imageUrl || user.image} />
+                                <Avatar
+                                    alt={user.displayName}
+                                    src={user.imageUrl || user.image}
+                                />
                             }
                             endIcon={<ArrowDropDownIcon />}
                             aria-label="Account menu"

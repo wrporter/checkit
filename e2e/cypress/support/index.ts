@@ -13,7 +13,7 @@ declare global {
              * Custom command to log a user in via the API.
              * @example cy.signup('jd@gmail.com', '&jklO99')
              */
-            login(email: string, password: string): Chainable<Response<void>>
+            login(email: string, password: string): void
 
             /**
              * Custom command to delete the given user.
@@ -26,13 +26,6 @@ declare global {
              * @example cy.signup('jd@gmail.com', '&jklO99')
              */
             logout(): void
-
-            /**
-             * Custom command to delete a user via the API. This is useful for cleaning up after tests that create a
-             * user.
-             * @example cy.signup('John Doe', 'jd@gmail.com', '&jklO99')
-             */
-            deleteUser(): void
 
             /**
              * Custom command to only type in a field if there is text to type.

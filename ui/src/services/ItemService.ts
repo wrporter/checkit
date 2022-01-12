@@ -16,13 +16,13 @@ export function saveItem(item: SaveItem) {
         },
         body: JSON.stringify(item),
     })
-        .then(response => {
+        .then((response) => {
             if (response.status >= 400) {
                 throw new Error('Failed to save item. Please try again.');
             }
             return response;
         })
-        .then(response => response.json());
+        .then((response) => response.json());
 }
 
 export function updateItemStatus(itemId: string, status: string) {
@@ -32,7 +32,7 @@ export function updateItemStatus(itemId: string, status: string) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ status }),
-    }).then(response => {
+    }).then((response) => {
         if (response.status >= 400) {
             throw new Error('Failed to update item status. Please try again.');
         }
@@ -41,7 +41,7 @@ export function updateItemStatus(itemId: string, status: string) {
 }
 
 export function getItems() {
-    return fetch('/api/items').then(response => response.json());
+    return fetch('/api/items').then((response) => response.json());
 }
 
 export function deleteCompletedItems() {

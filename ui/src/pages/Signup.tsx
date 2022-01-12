@@ -2,15 +2,21 @@ import React from 'react';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
 import { red } from '@mui/material/colors';
+import {
+    Button,
+    IconButton,
+    InputAdornment,
+    Paper,
+    Typography,
+} from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import { FormProvider, useForm } from 'react-hook-form';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuthentication } from '../context/user';
-import { Button, IconButton, InputAdornment, Paper, Typography } from '@mui/material';
 import { ReactComponent as GoogleLogo } from '../assets/google-logo.svg';
 import { signup, SignupForm } from '../services/UserService';
 import FormTextField from '../components/form/FormTextField';
-import { LoadingButton } from '@mui/lab';
-import { FormProvider, useForm } from 'react-hook-form';
 import PasswordMeter from '../components/form/PasswordMeter';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -24,7 +30,7 @@ const useStyles = makeStyles((theme) => ({
     },
     error: {
         color: red['700'],
-        textShadow: '0 0 2px #ddd'
+        textShadow: '0 0 2px #ddd',
     },
     content: {
         width: '100%',
@@ -46,7 +52,7 @@ const useStyles = makeStyles((theme) => ({
         textTransform: 'none',
         fontWeight: 'normal',
         '&:hover': {
-            backgroundColor: '#f8f9f9'
+            backgroundColor: '#f8f9f9',
         },
     },
     loginLogo: {
@@ -80,28 +86,34 @@ export default function Signup() {
             displayName: '',
             email: '',
             password: '',
-        }
+        },
     });
 
     const [showPassword, setShowPassword] = React.useState(false);
     const handleClickShowPassword = () => {
-        setShowPassword(v => !v);
+        setShowPassword((v) => !v);
     };
-    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handleMouseDownPassword = (
+        event: React.MouseEvent<HTMLButtonElement>
+    ) => {
         event.preventDefault();
     };
 
     const handleSubmit = (data: SignupForm) => {
         setLoading(true);
-        register(signup({
-            displayName: data.displayName,
-            email: data.email,
-            password: data.password,
-        })).catch(() => {
-            setError("Invalid email or password, please try again.")
-        }).finally(() => {
-            setLoading(false);
-        });
+        register(
+            signup({
+                displayName: data.displayName,
+                email: data.email,
+                password: data.password,
+            })
+        )
+            .catch(() => {
+                setError('Invalid email or password, please try again.');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
     return (
@@ -112,9 +124,7 @@ export default function Signup() {
                 </Typography>
 
                 {error && (
-                    <Typography className={classes.error}>
-                        {error}
-                    </Typography>
+                    <Typography className={classes.error}>{error}</Typography>
                 )}
 
                 <Button
@@ -131,8 +141,12 @@ export default function Signup() {
 
                 <Paper elevation={1} className={classes.formContainer}>
                     <FormProvider {...methods}>
-                        <form className={classes.form} noValidate autoComplete="off"
-                              onSubmit={methods.handleSubmit(handleSubmit)}>
+                        <form
+                            className={classes.form}
+                            noValidate
+                            autoComplete="off"
+                            onSubmit={methods.handleSubmit(handleSubmit)}
+                        >
                             <Typography variant="body1" component="h2">
                                 Or sign up with email
                             </Typography>
@@ -142,7 +156,7 @@ export default function Signup() {
                                 type="text"
                                 label="Display Name"
                                 rules={{
-                                    required: "Please enter a display name"
+                                    required: 'Please enter a display name',
                                 }}
                             />
                             <FormTextField
@@ -153,8 +167,9 @@ export default function Signup() {
                                     required: 'Please enter an email address',
                                     pattern: {
                                         value: /^\S+@\S+$/i,
-                                        message: 'Please enter a valid email address'
-                                    }
+                                        message:
+                                            'Please enter a valid email address',
+                                    },
                                 }}
                             />
                             <FormTextField
@@ -162,20 +177,32 @@ export default function Signup() {
                                 type={showPassword ? 'text' : 'password'}
                                 label="Password"
                                 rules={{ required: 'Please enter a password' }}
-                                helperText={<PasswordMeter password={methods.watch('password')} />}
+                                helperText={
+                                    <PasswordMeter
+                                        password={methods.watch('password')}
+                                    />
+                                }
                                 InputProps={{
                                     endAdornment: (
                                         <InputAdornment position="end">
                                             <IconButton
                                                 aria-label="toggle password visibility"
-                                                onClick={handleClickShowPassword}
-                                                onMouseDown={handleMouseDownPassword}
+                                                onClick={
+                                                    handleClickShowPassword
+                                                }
+                                                onMouseDown={
+                                                    handleMouseDownPassword
+                                                }
                                                 edge="end"
                                             >
-                                                {showPassword ? <VisibilityOff /> : <Visibility />}
+                                                {showPassword ? (
+                                                    <VisibilityOff />
+                                                ) : (
+                                                    <Visibility />
+                                                )}
                                             </IconButton>
                                         </InputAdornment>
-                                    )
+                                    ),
                                 }}
                             />
 

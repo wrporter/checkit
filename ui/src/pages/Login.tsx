@@ -1,12 +1,12 @@
 import React from 'react';
 import { Box, Button, Paper, Typography } from '@mui/material';
-import { ReactComponent as GoogleLogo } from '../assets/google-logo.svg';
-import { useAuthentication } from '../context/user';
 import makeStyles from '@mui/styles/makeStyles';
 import { red } from '@mui/material/colors';
-import { Credentials, login } from '../services/UserService';
 import { LoadingButton } from '@mui/lab';
 import { FormProvider, useForm } from 'react-hook-form';
+import { Credentials, login } from '../services/UserService';
+import { useAuthentication } from '../context/user';
+import { ReactComponent as GoogleLogo } from '../assets/google-logo.svg';
 import FormTextField from '../components/form/FormTextField';
 
 const useStyles = makeStyles((theme) => ({
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme) => ({
     },
     error: {
         color: red['700'],
-        textShadow: '0 0 2px #ddd'
+        textShadow: '0 0 2px #ddd',
     },
     content: {
         width: '100%',
@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
         textTransform: 'none',
         fontWeight: 'normal',
         '&:hover': {
-            backgroundColor: '#f8f9f9'
+            backgroundColor: '#f8f9f9',
         },
     },
     loginLogo: {
@@ -76,19 +76,23 @@ export default function Login() {
         defaultValues: {
             email: '',
             password: '',
-        }
+        },
     });
 
     const handleLoginClick = (data: Credentials) => {
         setLoading(true);
-        onLogin(login({
-            email: data.email,
-            password: data.password,
-        })).catch(() => {
-            setError("Invalid email or password, please try again.")
-        }).finally(() => {
-            setLoading(false);
-        });
+        onLogin(
+            login({
+                email: data.email,
+                password: data.password,
+            })
+        )
+            .catch(() => {
+                setError('Invalid email or password, please try again.');
+            })
+            .finally(() => {
+                setLoading(false);
+            });
     };
 
     return (
@@ -99,9 +103,7 @@ export default function Login() {
                 </Typography>
 
                 {error && (
-                    <Typography className={classes.error}>
-                        {error}
-                    </Typography>
+                    <Typography className={classes.error}>{error}</Typography>
                 )}
 
                 <Button
@@ -118,8 +120,12 @@ export default function Login() {
 
                 <Paper elevation={1} className={classes.formContainer}>
                     <FormProvider {...methods}>
-                        <form className={classes.form} noValidate autoComplete="off"
-                              onSubmit={methods.handleSubmit(handleLoginClick)}>
+                        <form
+                            className={classes.form}
+                            noValidate
+                            autoComplete="off"
+                            onSubmit={methods.handleSubmit(handleLoginClick)}
+                        >
                             <Typography variant="body1" component="h2">
                                 Or log in with email
                             </Typography>
@@ -132,8 +138,9 @@ export default function Login() {
                                     required: 'Please enter an email address',
                                     pattern: {
                                         value: /^\S+@\S+$/i,
-                                        message: 'Please enter a valid email address'
-                                    }
+                                        message:
+                                            'Please enter a valid email address',
+                                    },
                                 }}
                             />
                             <FormTextField

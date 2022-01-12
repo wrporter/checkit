@@ -1,7 +1,7 @@
 export type Credentials = {
     email: string;
     password: string;
-}
+};
 
 export interface SignupForm {
     displayName: string;
@@ -10,9 +10,9 @@ export interface SignupForm {
 }
 
 export function getUser() {
-    return fetch('/api/auth/user').then(response => {
+    return fetch('/api/auth/user').then((response) => {
         if (response.status === 204 || response.status >= 400) {
-            return;
+            return Promise.resolve();
         }
         return response.json();
     });
@@ -25,7 +25,7 @@ export function login(credentials: Credentials) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials),
-    }).then(response => {
+    }).then((response) => {
         if (response.status >= 400) {
             return Promise.reject(response.json());
         }
@@ -33,24 +33,25 @@ export function login(credentials: Credentials) {
     });
 }
 
-export function signup(signup: SignupForm) {
+export function signup(form: SignupForm) {
     return fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(signup),
-    }).then(response => {
+        body: JSON.stringify(form),
+    }).then((response) => {
         if (response.status >= 400) {
             return Promise.reject();
         }
+        return Promise.resolve();
     });
 }
 
 export function logout() {
     return fetch('/api/auth/logout', {
         method: 'POST',
-    }).then(response => {
+    }).then((response) => {
         if (response.status >= 400) {
             return Promise.reject(response.json());
         }
@@ -61,7 +62,7 @@ export function logout() {
 export function deleteUser() {
     return fetch('/api/auth/user', {
         method: 'DELETE',
-    }).then(response => {
+    }).then((response) => {
         if (response.status >= 400) {
             return Promise.reject(response.json());
         }

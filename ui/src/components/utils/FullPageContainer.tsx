@@ -14,11 +14,14 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface FullPageContainerProps {
-    children: React.ReactNode,
-    className?: string,
+    children: React.ReactNode;
+    className?: string;
 }
 
-export default function FullPageContainer({ children, className }: FullPageContainerProps) {
+export default function FullPageContainer({
+    children,
+    className,
+}: FullPageContainerProps) {
     const classes = useStyles();
 
     return (

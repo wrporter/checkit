@@ -1,9 +1,9 @@
 import React from 'react';
 import { Route, Routes } from 'react-router-dom';
+import Box from '@mui/material/Box';
 import Profile from '../../pages/Profile';
 import Home from '../../pages/Home';
 import { useAuthentication } from '../../context/user';
-import Box from '@mui/material/Box';
 import './AuthenticatedApp.css';
 import NavBar from './NavBar';
 import NotFound from '../../pages/NotFound';
@@ -16,7 +16,7 @@ export default function AuthenticatedApp() {
         const ws = new WebSocket(
             `${protocol}://${document.location.host}/api/keepalive`
         );
-        ws.onmessage = event => {
+        ws.onmessage = (event) => {
             if (event.data === 'session_end') {
                 refetch();
             }
@@ -24,7 +24,7 @@ export default function AuthenticatedApp() {
 
         return () => {
             ws.close();
-        }
+        };
     }, [refetch]);
 
     return (
