@@ -47,7 +47,7 @@ describe('Sign up', () => {
             cy.findByRole('textbox', { name: 'What do you want to do?' }).should('exist')
         })
 
-        it.only('does not allow the user to sign up when the account already exists', () => {
+        it('does not allow the user to sign up when the account already exists', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
             cy.findByRole('textbox', { name: 'What do you want to do?' }).should('exist')
 
