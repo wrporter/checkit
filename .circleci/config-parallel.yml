@@ -56,7 +56,7 @@ workflows:
   build-deploy:
     jobs:
       - deploy-docker-compose:
-          context: deploy
+          - context: deploy
       - build-deploy-server:
           context: deploy
       - build-deploy-ui:

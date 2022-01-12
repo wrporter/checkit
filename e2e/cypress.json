@@ -1,5 +1,6 @@
 {
   "projectId": "checkit",
   "baseUrl": "https://checkit.sunbeam.cf",
+  "defaultCommandTimeout": 8000,
   "video": false
 }
