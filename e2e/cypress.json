@@ -3,6 +3,7 @@
   "baseUrl": "https://checkit.sunbeam.cf",
   "retries": 1,
   "video": false,
+  "experimentalSessionSupport": true,
   "reporter": "cypress-multi-reporters",
   "reporterOptions": {
     "configFile": "reporter-config.json"

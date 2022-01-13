@@ -1,6 +1,5 @@
 import '@testing-library/cypress/add-commands'
 import Chainable = Cypress.Chainable;
-import Response = Cypress.Response;
 
 Cypress.Commands.add('signup', (name: string, email: string, password: string) => {
     cy.request({
@@ -27,27 +26,28 @@ Cypress.Commands.add('logout', () => {
 })
 
 Cypress.Commands.add('login', (email: string, password: string): void => {
-    cy.request({
-        url: '/api/auth/login',
-        method: 'POST',
-        body: {
-            email,
-            password,
-        }
-    })
+    cy.session([email, password], () => {
+        cy.visit('/login')
 
-    cy.getCookie('SessionID')
-        .then((cookie) => {
-            if (cookie) {
-                cy.setCookie(cookie.name, cookie.value)
-            }
+        cy.request({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+                email,
+                password,
+            },
         })
+
+        cy.getCookie('SessionID').should('exist')
+    })
 })
 
 Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
+    cy.visit('/login')
+
     cy.request({
-        url: '/api/auth/login',
         method: 'POST',
+        url: '/api/auth/login',
         body: {
             email,
             password,
@@ -61,8 +61,8 @@ Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
                 cy.setCookie(cookie.name, cookie.value)
 
                 cy.request({
-                    url: '/api/auth/user',
                     method: 'DELETE',
+                    url: '/api/auth/user',
                     failOnStatusCode: false,
                 })
             }
