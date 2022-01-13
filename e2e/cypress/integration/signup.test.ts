@@ -37,23 +37,17 @@ describe('Sign up', () => {
             cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
         })
 
-        afterEach(() => {
-            cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-        })
-
         it('logs the user in upon sign up', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 
-            cy.findByRole('textbox', { name: 'What do you want to do?' }).should('exist')
+            cy.findByText('Get stuff done!').should('exist')
         })
 
         it('does not allow the user to sign up when the account already exists', () => {
-            signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-            cy.findByRole('textbox', { name: 'What do you want to do?' }).should('exist')
+            cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 
             cy.logout()
             cy.reload()
-            cy.visit('/signup')
 
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 

@@ -4,7 +4,7 @@ function clickControl(control: string) {
 }
 
 function addItem(item: string) {
-    cy.findByRole('textbox').type(`${item}{enter}`)
+    cy.findByRole('textbox', { name: 'What do you want to do?' }).type(`${item}{enter}`)
 }
 
 describe('Todo List', () => {
@@ -15,11 +15,12 @@ describe('Todo List', () => {
             cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
             cy.visit('')
             cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            cy.reload()
 
             addItem(item)
         })
 
-        it('adds an item to the list', () => {
+        it.only('adds an item to the list', () => {
             cy.findByRole('checkbox', { name: item }).should('exist')
         })
 
