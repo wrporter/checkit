@@ -13,8 +13,8 @@ describe('Todo List', () => {
     describe('Success', () => {
         beforeEach(() => {
             cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-            cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
             cy.visit('')
+            cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 
             addItem(item)
         })
