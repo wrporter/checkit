@@ -207,12 +207,15 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 			return
 		}
 
+		timer = Track(c.Request.Context(), time.Now(), "Mongo: Hash password")
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+		timer()
 		if err != nil {
 			log.SC(c.Request.Context()).Errorf("Failed to hash password: %s", err)
 			httputil.InternalError(c, "Internal server error")
 			return
 		}
+		timer = Track(c.Request.Context(), time.Now(), "Mongo: Save user")
 		u, err = s.SaveUser(c.Request.Context(), store.User{
 			Image:           body.Image,
 			Email:           body.Email,
@@ -220,15 +223,18 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 			Password:        string(hashedPassword),
 			SocialProviders: map[string]bool{"basic": true},
 		})
+		timer()
 		if err != nil {
 			log.SC(c.Request.Context()).Errorf("Failed to save user: %s", err)
 			httputil.InternalError(c, "Internal server error")
 			return
 		}
 
+		timer = Track(c.Request.Context(), time.Now(), "Mongo: Add to session")
 		log.SC(c.Request.Context()).Infof("User signed up: %s", u.ID.Hex())
 		manager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
 		ginzap.AddUserID(c, u.ID.Hex())
+		timer()
 		c.Status(http.StatusNoContent)
 	}
 }
