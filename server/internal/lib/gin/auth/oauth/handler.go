@@ -1,19 +1,21 @@
 package oauth
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/wrporter/checkit/server/internal/lib/gin/ginzap"
 	"github.com/wrporter/checkit/server/internal/lib/httputil"
 	"github.com/wrporter/checkit/server/internal/lib/limit"
 	"github.com/wrporter/checkit/server/internal/lib/log"
-	session2 "github.com/wrporter/checkit/server/internal/lib/session"
+	"github.com/wrporter/checkit/server/internal/lib/session"
 	"github.com/wrporter/checkit/server/internal/lib/validate"
 	"github.com/wrporter/checkit/server/internal/server"
 	"github.com/wrporter/checkit/server/internal/server/store"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"net/http"
+	"time"
 )
 
 type (
@@ -94,7 +96,7 @@ func RegisterRoutes(server *server.Server) {
 	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))
 }
 
-func Keepalive(manager *session2.Manager) gin.HandlerFunc {
+func Keepalive(manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sess := manager.Get(c.Request.Context())
 
@@ -106,12 +108,12 @@ func Keepalive(manager *session2.Manager) gin.HandlerFunc {
 		defer conn.Close()
 		_ = conn.WriteMessage(websocket.TextMessage, []byte("connected"))
 
-		cookie, err := c.Request.Cookie(session2.CookieName)
+		cookie, err := c.Request.Cookie(session.CookieName)
 		if err != nil {
 			log.SC(c.Request.Context()).Error("Failed to get session token cookie", err)
 			return
 		}
-		client := &session2.Client{
+		client := &session.Client{
 			Token:  cookie.Value,
 			Delete: make(chan bool),
 		}
@@ -129,7 +131,7 @@ func Keepalive(manager *session2.Manager) gin.HandlerFunc {
 	}
 }
 
-func Logout(manager *session2.Manager) gin.HandlerFunc {
+func Logout(manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		sess := manager.Get(c.Request.Context())
 		err := manager.Destroy(c.Request.Context())
@@ -143,7 +145,7 @@ func Logout(manager *session2.Manager) gin.HandlerFunc {
 	}
 }
 
-func GetUser(s store.Store, manager *session2.Manager) gin.HandlerFunc {
+func GetUser(s store.Store, manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !manager.Exists(c.Request.Context()) {
 			c.Status(http.StatusNoContent)
@@ -166,7 +168,7 @@ func GetUser(s store.Store, manager *session2.Manager) gin.HandlerFunc {
 	}
 }
 
-func DeleteUser(s store.Store, manager *session2.Manager) gin.HandlerFunc {
+func DeleteUser(s store.Store, manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := manager.Get(c.Request.Context())
 
@@ -188,11 +190,13 @@ func DeleteUser(s store.Store, manager *session2.Manager) gin.HandlerFunc {
 	}
 }
 
-func Signup(s store.Store, manager *session2.Manager) gin.HandlerFunc {
+func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		body := validate.GetRequestBody(c).(*SignupRequest)
 
+		timer := Track(c.Request.Context(), time.Now(), "Mongo: Get user by email")
 		u, err := s.GetUserByEmail(c.Request.Context(), body.Email)
+		timer()
 		if u != nil {
 			log.SC(c.Request.Context()).Errorf("Failed signup for user that already exists: %s", u.ID.Hex())
 			httputil.Error(c, http.StatusBadRequest, "Bad request")
@@ -223,13 +227,13 @@ func Signup(s store.Store, manager *session2.Manager) gin.HandlerFunc {
 		}
 
 		log.SC(c.Request.Context()).Infof("User signed up: %s", u.ID.Hex())
-		manager.Put(c.Request.Context(), session2.User{ID: u.ID.Hex()})
+		manager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
 		ginzap.AddUserID(c, u.ID.Hex())
 		c.Status(http.StatusNoContent)
 	}
 }
 
-func Login(store store.Store, manager *session2.Manager) gin.HandlerFunc {
+func Login(store store.Store, manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		body := validate.GetRequestBody(c).(*LoginRequest)
 
@@ -258,17 +262,23 @@ func Login(store store.Store, manager *session2.Manager) gin.HandlerFunc {
 		}
 
 		log.SC(c.Request.Context()).Infof("User logged in: %s", u.ID.Hex())
-		manager.Put(c.Request.Context(), session2.User{ID: u.ID.Hex()})
+		manager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
 		ginzap.AddUserID(c, u.ID.Hex())
 		c.JSON(http.StatusOK, u)
 	}
 }
 
-func RequireAuth(manager *session2.Manager) gin.HandlerFunc {
+func RequireAuth(manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !manager.Exists(c.Request.Context()) {
 			httputil.Error(c, http.StatusUnauthorized, "Session expired")
 			c.Abort()
 		}
+	}
+}
+func Track(ctx context.Context, start time.Time, component string) func() {
+	return func() {
+		elapsed := time.Since(start)
+		log.SC(ctx).Infof("🕒 %s took %s", component, elapsed)
 	}
 }
