@@ -208,7 +208,7 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 		}
 
 		timer = Track(c.Request.Context(), time.Now(), "Mongo: Hash password")
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 14)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
 		timer()
 		if err != nil {
 			log.SC(c.Request.Context()).Errorf("Failed to hash password: %s", err)
