@@ -39,7 +39,6 @@ describe('Sign up', () => {
 
         it('logs the user in upon sign up', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-            cy.visit('')
 
             cy.findByText('Get stuff done!').should('exist')
         })
