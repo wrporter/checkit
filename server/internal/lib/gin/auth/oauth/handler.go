@@ -198,7 +198,7 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 		u, err := s.GetUserByEmail(c.Request.Context(), body.Email)
 		timer()
 		if u != nil {
-			log.SC(c.Request.Context()).Errorf("Failed signup for user that already exists: %s", u.ID.Hex())
+			log.SC(c.Request.Context()).Infof("Failed signup for user that already exists: %s", u.ID.Hex())
 			httputil.Error(c, http.StatusBadRequest, "Bad request")
 			return
 		} else if err != nil && err != mongo.ErrNoDocuments {
@@ -208,7 +208,7 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 		}
 
 		timer = Track(c.Request.Context(), time.Now(), "Mongo: Hash password")
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), 10)
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 		timer()
 		if err != nil {
 			log.SC(c.Request.Context()).Errorf("Failed to hash password: %s", err)

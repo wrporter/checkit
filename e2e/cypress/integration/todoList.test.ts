@@ -15,12 +15,12 @@ describe('Todo List', () => {
             cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
             cy.visit('')
             cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-            cy.reload()
+            cy.visit('')
 
             addItem(item)
         })
 
-        it.only('adds an item to the list', () => {
+        it('adds an item to the list', () => {
             cy.findByRole('checkbox', { name: item }).should('exist')
         })
 
