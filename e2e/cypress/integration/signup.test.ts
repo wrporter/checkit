@@ -1,4 +1,6 @@
 function signup(name: string, email: string, password: string) {
+    cy.intercept('/api/auth/user').as('getUser')
+
     cy.visit('/signup')
 
     cy.typeIfText('Display Name', name)
@@ -6,6 +8,8 @@ function signup(name: string, email: string, password: string) {
     cy.typeIfText('Password', password)
 
     cy.findByRole('button', { name: 'Sign up' }).click()
+
+    cy.wait('@getUser')
 }
 
 describe('Sign up', () => {

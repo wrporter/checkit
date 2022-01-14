@@ -2,6 +2,9 @@ import '@testing-library/cypress/add-commands'
 import Chainable = Cypress.Chainable;
 
 Cypress.Commands.add('signup', (name: string, email: string, password: string) => {
+    cy.visit('/signup')
+    cy.intercept('/api/auth/user').as('getUser')
+
     cy.request({
         method: 'POST',
         url: '/api/auth/signup',
@@ -19,6 +22,9 @@ Cypress.Commands.add('signup', (name: string, email: string, password: string) =
                 cy.setCookie(cookie.name, cookie.value)
             }
         })
+
+    cy.visit('/')
+    cy.wait('@getUser')
 })
 
 Cypress.Commands.add('logout', () => {
@@ -28,6 +34,7 @@ Cypress.Commands.add('logout', () => {
 Cypress.Commands.add('login', (email: string, password: string): void => {
     cy.session([email, password], () => {
         cy.visit('/login')
+        cy.intercept('/api/auth/user').as('getUser')
 
         cy.request({
             method: 'POST',
@@ -38,7 +45,8 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
             },
         })
 
-        cy.getCookie('SessionID').should('exist')
+        cy.visit('/')
+        cy.wait('@getUser')
     })
 })
 
