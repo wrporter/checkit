@@ -25,6 +25,7 @@ Cypress.Commands.add('signup', (name: string, email: string, password: string) =
 
     cy.visit('/')
     cy.wait('@getUser')
+    cy.getCookie('SessionID').should('exist')
 })
 
 Cypress.Commands.add('logout', () => {
@@ -47,6 +48,7 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
 
         cy.visit('/')
         cy.wait('@getUser')
+        cy.getCookie('SessionID').should('exist')
     })
 })
 

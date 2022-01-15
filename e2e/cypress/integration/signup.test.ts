@@ -10,6 +10,7 @@ function signup(name: string, email: string, password: string) {
     cy.findByRole('button', { name: 'Sign up' }).click()
 
     cy.wait('@getUser')
+    cy.getCookie('SessionID').should('exist')
 }
 
 describe('Sign up', () => {

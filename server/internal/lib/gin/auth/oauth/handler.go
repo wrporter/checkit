@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/pkg/errors"
 	"github.com/wrporter/checkit/server/internal/lib/gin/ginzap"
 	"github.com/wrporter/checkit/server/internal/lib/httputil"
 	"github.com/wrporter/checkit/server/internal/lib/limit"
@@ -201,7 +202,7 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 			log.SC(c.Request.Context()).Infof("Failed signup for user that already exists: %s", u.ID.Hex())
 			httputil.Error(c, http.StatusBadRequest, "Bad request")
 			return
-		} else if err != nil && err != mongo.ErrNoDocuments {
+		} else if err != nil && !errors.Is(err, mongo.ErrNoDocuments) {
 			log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err)
 			httputil.InternalError(c, "Internal server error")
 			return
