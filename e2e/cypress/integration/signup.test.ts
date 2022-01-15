@@ -2,6 +2,7 @@ function signup(name: string, email: string, password: string) {
     cy.intercept('/api/auth/user').as('getUser')
 
     cy.visit('/signup')
+    cy.wait('@getUser')
 
     cy.typeIfText('Display Name', name)
     cy.typeIfText('Email', email)
@@ -50,7 +51,6 @@ describe('Sign up', () => {
 
         it('does not allow the user to sign up when the account already exists', () => {
             cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-            cy.getCookie('SessionID').should('exist')
 
             cy.logout()
             cy.reload()
