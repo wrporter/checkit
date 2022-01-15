@@ -9,8 +9,6 @@ function signup(name: string, email: string, password: string) {
     cy.typeIfText('Password', password)
 
     cy.findByRole('button', { name: 'Sign up' }).click()
-
-    cy.wait('@getUser')
 }
 
 describe('Sign up', () => {
@@ -44,7 +42,7 @@ describe('Sign up', () => {
 
         it('logs the user in upon sign up', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-            cy.getCookie('SessionID').should('exist')
+            cy.wait('@getUser')
 
             cy.findByText('Get stuff done!').should('exist')
         })
@@ -56,6 +54,7 @@ describe('Sign up', () => {
             cy.reload()
 
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            cy.wait('@getUser')
 
             cy.findByText('Invalid email or password, please try again.').should('exist')
         })
