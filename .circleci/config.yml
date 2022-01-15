@@ -39,17 +39,20 @@ jobs:
 workflows:
   build:
     jobs:
-      - deploy-docker-compose:
-          context: deploy
-      - build-deploy-server:
-          context: deploy
-      - build-deploy-ui:
-          context: deploy
+#      - deploy-docker-compose:
+#          context: deploy
+#      - build-deploy-server:
+#          context: deploy
+#          filters:
+#            branches:
+#              only: master
+#      - build-deploy-ui:
+#          context: deploy
       - cypress/run:
-          requires:
-            - deploy-docker-compose
-            - build-deploy-server
-            - build-deploy-ui
+#          requires:
+#            - deploy-docker-compose
+#            - build-deploy-server
+#            - build-deploy-ui
           working_directory: e2e
           cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
           post-steps:
