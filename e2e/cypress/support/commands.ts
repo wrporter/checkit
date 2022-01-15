@@ -25,7 +25,7 @@ Cypress.Commands.add('signup', (name: string, email: string, password: string) =
         })
 
     cy.visit('/')
-    cy.wait('@getUser')
+    cy.wait('@getUser').its('body').should('include', 'userId')
 })
 
 Cypress.Commands.add('logout', () => {
@@ -48,7 +48,7 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
         })
 
         cy.visit('/')
-        cy.wait('@getUser')
+        cy.wait('@getUser').its('body').should('include', 'userId')
     })
 })
 
