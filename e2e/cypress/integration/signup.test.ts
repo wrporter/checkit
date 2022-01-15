@@ -10,7 +10,6 @@ function signup(name: string, email: string, password: string) {
     cy.findByRole('button', { name: 'Sign up' }).click()
 
     cy.wait('@getUser')
-    cy.getCookie('SessionID').should('exist')
 }
 
 describe('Sign up', () => {
@@ -44,12 +43,14 @@ describe('Sign up', () => {
 
         it('logs the user in upon sign up', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            cy.getCookie('SessionID').should('exist')
 
             cy.findByText('Get stuff done!').should('exist')
         })
 
         it('does not allow the user to sign up when the account already exists', () => {
             cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            cy.getCookie('SessionID').should('exist')
 
             cy.logout()
             cy.reload()
