@@ -17,6 +17,7 @@ type Store interface {
 	SaveItem(ctx context.Context, userID string, text string) (Item, error)
 	GetItemsForUser(ctx context.Context, userID string) ([]Item, error)
 	UpdateItemStatus(ctx context.Context, userID string, itemID string, status ItemStatus) error
+	DeleteItems(ctx context.Context, userID string) error
 	DeleteCompletedItems(ctx context.Context, userID string) error
 }
 

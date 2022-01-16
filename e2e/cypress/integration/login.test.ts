@@ -8,7 +8,7 @@ function login(email: string, password: string) {
 }
 
 describe('Log in', () => {
-    beforeEach(() => {
+    before(() => {
         cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
         cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
         cy.logout()
@@ -45,7 +45,7 @@ describe('Log in', () => {
     it('logs in successfully', () => {
         login(Cypress.env('email'), Cypress.env('password'))
 
-        cy.findByRole('textbox', { name: 'What do you want to do?' }).should('exist')
+        cy.findByText('Get stuff done!').should('exist')
     })
 
     it('allows the user to logout', () => {

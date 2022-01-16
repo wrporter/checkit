@@ -12,6 +12,12 @@ function signup(name: string, email: string, password: string) {
 }
 
 describe('Sign up', () => {
+    before(() => {
+        cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
+        cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+        cy.logout()
+    })
+
     describe('Validation', () => {
         it('requires a name to sign up', () => {
             signup('', Cypress.env('email'), Cypress.env('password'))
@@ -36,25 +42,18 @@ describe('Sign up', () => {
     })
 
     describe('Success', () => {
-        beforeEach(() => {
-            cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-        })
-
         it('logs the user in upon sign up', () => {
-            signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            const email = 'checkit-test+signup@gmail.com';
+            const password = 'fakepass';
+            signup('Test User', email, password)
             cy.wait('@getUser')
 
             cy.findByText('Get stuff done!').should('exist')
+            cy.cleanupUser(email, password)
         })
 
         it('does not allow the user to sign up when the account already exists', () => {
-            cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-
-            cy.logout()
-            cy.reload()
-
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-            cy.wait('@getUser')
 
             cy.findByText('Invalid email or password, please try again.').should('exist')
         })

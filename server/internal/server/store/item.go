@@ -128,6 +128,18 @@ func (s *MongoStore) UpdateItemStatus(ctx context.Context, userID string, itemID
 	return nil
 }
 
+func (s *MongoStore) DeleteItems(ctx context.Context, userID string) error {
+	collection := s.client.Database("checkit").Collection("items")
+
+	uid, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = collection.DeleteMany(ctx, bson.M{"userId": uid})
+	return err
+}
+
 func (s *MongoStore) DeleteCompletedItems(ctx context.Context, userID string) error {
 	collection := s.client.Database("checkit").Collection("items")
 
