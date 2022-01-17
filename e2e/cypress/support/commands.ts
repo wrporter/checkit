@@ -10,31 +10,6 @@ Cypress.Commands.add('signup', (name: string, email: string, password: string) =
 
     cy.findByRole('button', { name: 'Sign up' }).click()
     cy.findByText('Get stuff done!').should('exist')
-
-    // cy.intercept('/api/auth/user').as('getUser')
-    // cy.visit('/signup')
-    // cy.wait('@getUser')
-    //
-    // cy.request({
-    //     method: 'POST',
-    //     url: '/api/auth/signup',
-    //     body: {
-    //         displayName: name,
-    //         email,
-    //         password,
-    //     },
-    //     failOnStatusCode: false,
-    // })
-    //
-    // cy.getCookie('SessionID')
-    //     .then((cookie) => {
-    //         if (cookie) {
-    //             cy.setCookie(cookie.name, cookie.value)
-    //         }
-    //     })
-    //
-    // cy.visit('/')
-    // cy.wait('@getUser').its('response.body').should('have.property', 'email')
 })
 
 Cypress.Commands.add('logout', () => {
@@ -43,7 +18,7 @@ Cypress.Commands.add('logout', () => {
 
 Cypress.Commands.add('login', (email: string, password: string): void => {
 
-    // cy.session([email, password], () => {
+    cy.session([email, password], () => {
         cy.visit('/login')
         cy.typeIfText('Email', email)
         cy.typeIfText('Password', password)
@@ -65,7 +40,7 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
         // })
         // cy.visit('/')
         // cy.findByText('Get stuff done!').should('exist')
-    // })
+    })
 
     // cy.visit('/')
     // cy.findByText('Get stuff done!').should('exist')
