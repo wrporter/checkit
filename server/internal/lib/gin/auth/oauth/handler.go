@@ -45,6 +45,7 @@ type (
 	}
 
 	UserResponse struct {
+		ID          string `json:"id"`
 		Image       string `json:"image"`
 		DisplayName string `json:"displayName"`
 		Email       string `json:"email"`
@@ -160,6 +161,7 @@ func GetUser(s store.Store, manager *session.Manager) gin.HandlerFunc {
 		}
 
 		c.JSON(http.StatusOK, UserResponse{
+			ID:          u.ID.Hex(),
 			Image:       u.ImageURL,
 			DisplayName: u.DisplayName,
 			Email:       u.Email,
@@ -234,7 +236,13 @@ func Signup(s store.Store, manager *session.Manager) gin.HandlerFunc {
 		manager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
 		ginzap.AddUserID(c, u.ID.Hex())
 		timer()
-		c.Status(http.StatusNoContent)
+
+		c.JSON(http.StatusOK, UserResponse{
+			ID:          u.ID.Hex(),
+			Image:       u.ImageURL,
+			DisplayName: u.DisplayName,
+			Email:       u.Email,
+		})
 	}
 }
 
