@@ -12,12 +12,6 @@ function signup(name: string, email: string, password: string) {
 }
 
 describe('Sign up', () => {
-    before(() => {
-        cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-        cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-        cy.logout()
-    })
-
     describe('Validation', () => {
         it('requires a name to sign up', () => {
             signup('', Cypress.env('email'), Cypress.env('password'))
@@ -42,6 +36,12 @@ describe('Sign up', () => {
     })
 
     describe('Success', () => {
+        beforeEach(() => {
+            cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
+            cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            cy.logout()
+        })
+
         it('logs the user in upon sign up', () => {
             const email = 'checkit-test+signup@gmail.com';
             const password = 'fakepass';
