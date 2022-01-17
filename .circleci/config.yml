@@ -106,10 +106,6 @@ workflows:
               only: master
     jobs:
       - cypress/run:
-          requires:
-            - deploy-docker-compose
-            - build-deploy-server
-            - build-deploy-ui
           filters:
             branches:
               only: master
