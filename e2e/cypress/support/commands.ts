@@ -2,30 +2,39 @@ import '@testing-library/cypress/add-commands'
 import Chainable = Cypress.Chainable;
 
 Cypress.Commands.add('signup', (name: string, email: string, password: string) => {
-    cy.intercept('/api/auth/user').as('getUser')
     cy.visit('/signup')
-    cy.wait('@getUser')
 
-    cy.request({
-        method: 'POST',
-        url: '/api/auth/signup',
-        body: {
-            displayName: name,
-            email,
-            password,
-        },
-        failOnStatusCode: false,
-    })
+    cy.typeIfText('Display Name', name)
+    cy.typeIfText('Email', email)
+    cy.typeIfText('Password', password)
 
-    cy.getCookie('SessionID')
-        .then((cookie) => {
-            if (cookie) {
-                cy.setCookie(cookie.name, cookie.value)
-            }
-        })
+    cy.findByRole('button', { name: 'Sign up' }).click()
+    cy.findByText('Get stuff done!').should('exist')
 
-    cy.visit('/')
-    cy.wait('@getUser').its('response.body').should('have.property', 'email')
+    // cy.intercept('/api/auth/user').as('getUser')
+    // cy.visit('/signup')
+    // cy.wait('@getUser')
+    //
+    // cy.request({
+    //     method: 'POST',
+    //     url: '/api/auth/signup',
+    //     body: {
+    //         displayName: name,
+    //         email,
+    //         password,
+    //     },
+    //     failOnStatusCode: false,
+    // })
+    //
+    // cy.getCookie('SessionID')
+    //     .then((cookie) => {
+    //         if (cookie) {
+    //             cy.setCookie(cookie.name, cookie.value)
+    //         }
+    //     })
+    //
+    // cy.visit('/')
+    // cy.wait('@getUser').its('response.body').should('have.property', 'email')
 })
 
 Cypress.Commands.add('logout', () => {
