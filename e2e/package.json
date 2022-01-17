@@ -6,9 +6,11 @@
   "scripts": {
     "ci": "npm run lint && npm run cypress:run",
     "cypress:open": "cypress open",
+    "cypress:open:dev": "CYPRESS_baseUrl=http://localhost:9010 npm run cypress:open",
     "cypress:run": "cypress run",
+    "cypress:run:dev": "CYPRESS_baseUrl=http://localhost:9010 npm run cypress:run",
     "lint": "tsc --noEmit",
-    "test": "CYPRESS_baseUrl=http://localhost:9010 cypress open"
+    "test": "npm run cypress:open:dev"
   },
   "author": "wesleyrporter@gmail.com",
   "license": "ISC",
