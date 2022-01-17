@@ -4,6 +4,14 @@ orbs:
   cypress: cypress-io/cypress@1.29.0
 
 jobs:
+  build-server:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build
+          working_directory: server
+          command: .ci/build.sh
   build-deploy-server:
     machine: true
     steps:
@@ -16,9 +24,16 @@ jobs:
           name: Deploy
           working_directory: server
           command: .ci/deploy.sh
+  build-ui:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name: Build
+          working_directory: ui
+          command: .ci/build.sh
   build-deploy-ui:
-    machine:
-      image: ubuntu-2004:202010-01
+    machine: true
     steps:
       - checkout
       - run:
@@ -30,8 +45,7 @@ jobs:
           working_directory: ui
           command: .ci/deploy.sh
   deploy-docker-compose:
-    machine:
-      image: ubuntu-2004:202010-01
+    machine: true
     steps:
       - checkout
       - run: .ci/deploy.sh
@@ -39,20 +53,66 @@ jobs:
 workflows:
   build:
     jobs:
-#      - deploy-docker-compose:
-#          context: deploy
-#      - build-deploy-server:
-#          context: deploy
-#          filters:
-#            branches:
-#              only: master
-#      - build-deploy-ui:
-#          context: deploy
+      - build-server:
+          context: deploy
+          filters:
+            branches:
+              ignore: master
+      - build-ui:
+          context: deploy
+          filters:
+            branches:
+              ignore: master
+  build-deploy:
+    jobs:
+      - deploy-docker-compose:
+          context: deploy
+          filters:
+            branches:
+              only: master
+      - build-deploy-server:
+          context: deploy
+          filters:
+            branches:
+              only: master
+      - build-deploy-ui:
+          context: deploy
+          filters:
+            branches:
+              only: master
       - cypress/run:
-#          requires:
-#            - deploy-docker-compose
-#            - build-deploy-server
-#            - build-deploy-ui
+          requires:
+            - deploy-docker-compose
+            - build-deploy-server
+            - build-deploy-ui
+          filters:
+            branches:
+              only: master
+          working_directory: e2e
+          cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
+          post-steps:
+            - store_test_results:
+                path: e2e/cypress/results
+            - store_artifacts:
+                path: e2e/cypress/screenshots
+            - store_artifacts:
+                path: e2e/cypress/videos
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only: master
+    jobs:
+      - cypress/run:
+          requires:
+            - deploy-docker-compose
+            - build-deploy-server
+            - build-deploy-ui
+          filters:
+            branches:
+              only: master
           working_directory: e2e
           cache-key: 'cache-{{ arch }}-{{ .Branch }}-{{ checksum "e2e/package.json" }}'
           post-steps:
