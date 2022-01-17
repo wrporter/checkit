@@ -87,7 +87,10 @@ func RegisterRoutes(server *server.Server) {
 			Logout(server.SessionManager),
 		)
 
-		group.GET("/user", GetUser(server.Store, server.SessionManager))
+		group.GET("/user",
+			RequireAuth(server.SessionManager),
+			GetUser(server.Store, server.SessionManager),
+		)
 		group.DELETE("/user",
 			RequireAuth(server.SessionManager),
 			DeleteUser(server.Store, server.SessionManager),
@@ -148,11 +151,6 @@ func Logout(manager *session.Manager) gin.HandlerFunc {
 
 func GetUser(s store.Store, manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if !manager.Exists(c.Request.Context()) {
-			c.Status(http.StatusNoContent)
-			return
-		}
-
 		user := manager.Get(c.Request.Context())
 		u, err := s.GetUser(c.Request.Context(), user.ID)
 		if err != nil {
