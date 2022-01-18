@@ -274,18 +274,17 @@ func Login(store store.Store, manager *session.Manager) gin.HandlerFunc {
 			return
 		}
 
-		log.SC(c.Request.Context()).Infof("User logged in: %s", u.ID.Hex())
 		manager.Put(c.Request.Context(), session.User{ID: u.ID.Hex()})
 		ginzap.AddUserID(c, u.ID.Hex())
+		log.SC(c.Request.Context()).Infof("User logged in: %s", u.ID.Hex())
 		c.JSON(http.StatusOK, u)
 	}
 }
 
 func RequireAuth(manager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.SC(c.Request.Context()).Infof("Session cookie: %v", c.Request.Cookies())
 		if !manager.Exists(c.Request.Context()) {
-			httputil.Error(c, http.StatusUnauthorized, "Session expired")
+			httputil.Error(c, http.StatusUnauthorized, "Session does not exist")
 			c.Abort()
 		}
 	}
