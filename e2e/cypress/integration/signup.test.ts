@@ -55,7 +55,7 @@ describe('Sign up', () => {
         it('does not allow the user to sign up when the account already exists', () => {
             signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 
-            cy.findByText('Invalid email or password, please try again.').should('exist')
+            cy.findByText('Failed to sign up, please try again.').should('exist')
         })
     })
 })

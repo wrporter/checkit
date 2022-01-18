@@ -109,7 +109,7 @@ export default function Signup() {
             })
         )
             .catch(() => {
-                setError('Invalid email or password, please try again.');
+                setError('Failed to sign up, please try again.');
             })
             .finally(() => {
                 setLoading(false);
