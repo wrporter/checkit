@@ -48,10 +48,6 @@ jobs:
     machine: true
     steps:
       - checkout
-      - add_ssh_keys:
-          fingerprints:
-            - "37:86:f7:ec:c8:05:f1:7b:a5:56:6b:61:f9:0b:ec:70"
-      - run: echo ${SSH_HOST}
       - run: .ci/deploy.sh
 
 workflows:
