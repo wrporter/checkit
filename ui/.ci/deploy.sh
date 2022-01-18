@@ -12,5 +12,5 @@ rm -f $(pwd)/${APP_NAME}.tar
 
 ssh ${SSH_PORT_OPT} ${SSH_USER}@${SSH_HOST} "docker rm -f ${APP_NAME} || true"
 ssh ${SSH_PORT_OPT} ${SSH_USER}@${SSH_HOST} "docker load -i ${BASE_DIRECTORY}${APP_NAME}.tar"
-ssh ${SSH_PORT_OPT} ${SSH_USER}@${SSH_HOST} "rm -f ${BASE_DIRECTORY}/${APP_NAME}.tar"
+ssh ${SSH_PORT_OPT} ${SSH_USER}@${SSH_HOST} "rm -f ${BASE_DIRECTORY}${APP_NAME}.tar"
 ssh ${SSH_PORT_OPT} ${SSH_USER}@${SSH_HOST} "cd ${BASE_DIRECTORY}${PARENT_APP} && docker-compose up --detach --build ${APP_NAME}"
