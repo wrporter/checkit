@@ -12,6 +12,6 @@ sed "s/\${GOOGLE_OAUTH_CLIENT_ID}/${GOOGLE_OAUTH_CLIENT_ID}/g" .ci/docker-compos
     sed "s/\${GOOGLE_OAUTH_CLIENT_SECRET}/${GOOGLE_OAUTH_CLIENT_SECRET}/g" \
     > .ci/docker-compose.tmp.yml
 
-scp ${SCP_PORT} $(pwd)/.ci/docker-compose.tmp.yml ${SSH_USER}@${SSH_HOST}:${BASE_DIRECTORY}${APP_NAME}/docker-compose.yml
+scp -P 2614 $(pwd)/.ci/docker-compose.tmp.yml wesp@sunbeam.cf:${BASE_DIRECTORY}${APP_NAME}/docker-compose.yml
 
 rm .ci/docker-compose.tmp.yml
