@@ -20,5 +20,8 @@ func SiteURL() string {
 }
 
 func AppDomain() string {
+	if AppPort == "" {
+		return AppHost
+	}
 	return fmt.Sprintf("%s:%s", AppHost, AppPort)
 }

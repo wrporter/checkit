@@ -68,7 +68,7 @@ func GoogleCallback(s store.Store, sessionManager *session.Manager) gin.HandlerF
 		}
 
 		// Delete the state cookie
-		c.SetCookie(stateCookieName, "", -1, "/", env.AppDomain(), true, true)
+		c.SetCookie(stateCookieName, "", -1, "/", env.SiteHost, true, true)
 
 		//log.SC(c.Request.Context()).Infof("State: %s", stateParam)
 		state := OAuthState{}
