@@ -31,7 +31,7 @@ func NewManager() *Manager {
 	sessionManager.IdleTimeout = 2 * time.Hour
 	sessionManager.Cookie.Name = CookieName
 	sessionManager.Cookie.Domain = env.SiteHost
-	sessionManager.Cookie.Path = "/"
+	sessionManager.Cookie.Path = ""
 	sessionManager.Cookie.Persist = true
 	sessionManager.Cookie.SameSite = http.SameSiteStrictMode
 	sessionManager.Cookie.Secure = true
