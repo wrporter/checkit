@@ -51,6 +51,7 @@ Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
                 cy.clearCookies()
             }
         })
+    cy.clearCookies()
 })
 
 Cypress.Commands.add('typeIfText', (label: string | RegExp, value: string): Chainable<JQuery> | undefined => {
