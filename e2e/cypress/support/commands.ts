@@ -43,12 +43,12 @@ Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
         .then((cookie) => {
             if (cookie) {
                 cy.setCookie(cookie.name, cookie.value)
-
                 cy.request({
                     method: 'DELETE',
                     url: '/api/auth/user',
                     failOnStatusCode: false,
                 })
+                cy.clearCookies()
             }
         })
 })
