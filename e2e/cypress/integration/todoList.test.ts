@@ -14,8 +14,6 @@ function addItem(): string {
 describe('Todo List', () => {
     before(() => {
         cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-        cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-        cy.logout()
     })
 
     beforeEach(() => {

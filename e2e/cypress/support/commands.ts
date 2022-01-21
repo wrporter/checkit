@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid'
 import '@testing-library/cypress/add-commands'
 import Chainable = Cypress.Chainable;
 
@@ -27,32 +28,35 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
 })
 
 Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
-    cy.visit('/')
+    cy.session(uuidv4(), () => {
+        cy.visit('/')
 
-    cy.request({
-        method: 'POST',
-        url: '/api/auth/login',
-        body: {
-            email,
-            password,
-        },
-        failOnStatusCode: false,
-    })
-
-    cy.getCookie('SessionID')
-        .then((cookie) => {
-            if (cookie) {
-                cy.setCookie(cookie.name, cookie.value)
-                cy.request({
-                    method: 'DELETE',
-                    url: '/api/auth/user',
-                    failOnStatusCode: false,
-                })
-                cy.clearCookies()
-            }
+        cy.request({
+            method: 'POST',
+            url: '/api/auth/login',
+            body: {
+                email,
+                password,
+            },
+            failOnStatusCode: false,
         })
 
-    cy.logout()
+        cy.getCookie('SessionID')
+            .then((cookie) => {
+                if (cookie) {
+                    cy.setCookie(cookie.name, cookie.value)
+                    cy.request({
+                        method: 'DELETE',
+                        url: '/api/auth/user',
+                        failOnStatusCode: false,
+                    })
+                    cy.clearCookies()
+                }
+            })
+
+        cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+        cy.logout()
+    })
 })
 
 Cypress.Commands.add('typeIfText', (label: string | RegExp, value: string): Chainable<JQuery> | undefined => {

@@ -1,5 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
-
 function signup(name: string, email: string, password: string) {
     cy.intercept('/api/auth/user').as('getUser')
 
@@ -39,11 +37,7 @@ describe('Sign up', () => {
 
     describe('Success', () => {
         beforeEach(() => {
-            cy.session(uuidv4(), () => {
-                cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-                cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-                cy.logout()
-            })
+            cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
         })
 
         it('logs the user in upon sign up', () => {
