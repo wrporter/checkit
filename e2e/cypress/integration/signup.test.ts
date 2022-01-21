@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 function signup(name: string, email: string, password: string) {
     cy.intercept('/api/auth/user').as('getUser')
 
@@ -41,13 +43,12 @@ describe('Sign up', () => {
         })
 
         it('logs the user in upon sign up', () => {
-            const email = 'checkit-test+signup@gmail.com';
-            const password = 'fakepass';
-            signup('Test User', email, password)
-            cy.wait('@getUser')
+            cy.session(uuidv4(), () => {
+                cy.deleteUser(Cypress.env('email'), Cypress.env('password'))
+            })
+            signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
 
             cy.findByText('Get stuff done!').should('exist')
-            cy.cleanupUser(email, password)
         })
 
         it('does not allow the user to sign up when the account already exists', () => {

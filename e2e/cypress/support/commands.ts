@@ -27,34 +27,37 @@ Cypress.Commands.add('login', (email: string, password: string): void => {
     })
 })
 
+Cypress.Commands.add('deleteUser', (email: string, password: string): void => {
+    cy.visit('/')
+
+    cy.request({
+        method: 'POST',
+        url: '/api/auth/login',
+        body: {
+            email,
+            password,
+        },
+        failOnStatusCode: false,
+    })
+
+    cy.getCookie('SessionID')
+        .then((cookie) => {
+            if (cookie) {
+                cy.setCookie(cookie.name, cookie.value)
+                cy.request({
+                    method: 'DELETE',
+                    url: '/api/auth/user',
+                    failOnStatusCode: false,
+                })
+                cy.clearCookies()
+            }
+        })
+})
+
 Cypress.Commands.add('cleanupUser', (email: string, password: string): void => {
     cy.session(uuidv4(), () => {
-        cy.visit('/')
-
-        cy.request({
-            method: 'POST',
-            url: '/api/auth/login',
-            body: {
-                email,
-                password,
-            },
-            failOnStatusCode: false,
-        })
-
-        cy.getCookie('SessionID')
-            .then((cookie) => {
-                if (cookie) {
-                    cy.setCookie(cookie.name, cookie.value)
-                    cy.request({
-                        method: 'DELETE',
-                        url: '/api/auth/user',
-                        failOnStatusCode: false,
-                    })
-                    cy.clearCookies()
-                }
-            })
-
-        cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+        cy.deleteUser(email, password)
+        cy.signup(Cypress.env('name'), email, password)
         cy.logout()
     })
 })

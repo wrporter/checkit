@@ -11,19 +11,25 @@ declare global {
 
             /**
              * Custom command to log a user in via the API.
-             * @example cy.signup('jd@gmail.com', '&jklO99')
+             * @example cy.login('jd@gmail.com', '&jklO99')
              */
             login(email: string, password: string): void
 
             /**
-             * Custom command to delete the given user.
-             * @example cy.signup('jd@gmail.com', '&jklO99')
+             * Custom command to clean up and sign up the given user.
+             * @example cy.cleanupUser('jd@gmail.com', '&jklO99')
              */
             cleanupUser(email: string, password: string): void
 
             /**
+             * Custom command to delete the given user.
+             * @example cy.deleteUser('jd@gmail.com', '&jklO99')
+             */
+            deleteUser(email: string, password: string): void
+
+            /**
              * Custom command to log a user out via the API.
-             * @example cy.signup('jd@gmail.com', '&jklO99')
+             * @example cy.logout()
              */
             logout(): void
 
