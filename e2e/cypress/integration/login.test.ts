@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid'
+
 function login(email: string, password: string) {
     cy.visit('/login')
 
@@ -9,9 +11,11 @@ function login(email: string, password: string) {
 
 describe('Log in', () => {
     before(() => {
-        cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
-        cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
-        cy.logout()
+        cy.session(uuidv4(), () => {
+            cy.cleanupUser(Cypress.env('email'), Cypress.env('password'))
+            cy.signup(Cypress.env('name'), Cypress.env('email'), Cypress.env('password'))
+            cy.logout()
+        })
     })
 
     it('requires an email', () => {
