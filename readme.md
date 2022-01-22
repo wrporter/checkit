@@ -30,7 +30,7 @@ The server is written in Golang with MongoDB storage.
 
 ## Deployment
 
-1. Get the OAuth key and secret from the [Google Cloud Platform](https://console.cloud.google.com/apis/credentials?authuser=1&project=test-oauth2-266303&supportedpurview=project)
+1. Get the OAuth key and secret from the [Google Cloud Platform](https://console.cloud.google.com/apis/credentials?authuser=1&project=checkit-339004&supportedpurview=project)
     - Insert the key and secret into [.ci/docker-compose.yml](.ci/docker-compose.yml)
     - Add the key and secret to your environment under `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET`
 2. Run `.ci/deploy.sh`
