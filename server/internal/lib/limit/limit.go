@@ -2,8 +2,8 @@ package limit
 
 import (
 	"encoding/json"
-	"github.com/didip/tollbooth"
-	"github.com/didip/tollbooth/limiter"
+	"github.com/didip/tollbooth/v6"
+	"github.com/didip/tollbooth/v6/limiter"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/wrporter/checkit/server/internal/lib/httputil"
@@ -24,9 +24,9 @@ func buildLimit() *limiter.Limiter {
 		panic(errors.Wrap(err, "Failed to parse response body"))
 	}
 
-	return tollbooth.NewLimiter(5, options).
+	return tollbooth.NewLimiter(0, options).
 		SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"}).
-		SetBurst(50).
+		SetBurst(0).
 		SetMessageContentType("application/json").
 		SetMessage(string(responseBody))
 }
