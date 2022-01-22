@@ -1,6 +1,6 @@
 import React from 'react';
 import Typography from '@mui/material/Typography';
-import { TextField } from '@mui/material';
+import { Alert, Link, TextField } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -37,7 +37,7 @@ export default function Home() {
     const [value, setValue] = React.useState('');
     const [saveError, setSaveError] = React.useState('');
     const [items, setItems] = React.useState<ItemType[]>([]);
-    const { data, error, isLoading } = useQuery('items', getItems, {
+    const { data, error, isLoading, refetch } = useQuery('items', getItems, {
         refetchOnMount: 'always',
     });
 
@@ -94,12 +94,22 @@ export default function Home() {
                 className={classes.input}
             />
 
-            {saveError ? (
-                <Typography style={{ color: 'red' }}>{saveError}</Typography>
-            ) : null}
+            {saveError && (
+                <Alert severity="error">
+                    Failed to save item. Please try again.
+                </Alert>
+            )}
 
             {isLoading && <CircularProgress />}
-            {error && 'Failed to load!'}
+            {error && (
+                <Alert severity="error">
+                    Failed to load items.{' '}
+                    {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
+                    <Link component="button" onClick={() => refetch()}>
+                        Try again.
+                    </Link>
+                </Alert>
+            )}
             {items && (
                 <List>
                     {items.map((item) => (

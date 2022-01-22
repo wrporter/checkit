@@ -15,7 +15,7 @@ parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaFeatures:
     jsx: true
-  ecmaVersion: 13
+  ecmaVersion: 2021
   sourceType: module
 plugins:
   - react
@@ -24,6 +24,7 @@ plugins:
   - jest
   - testing-library
   - jest-dom
+  - unused-imports
 settings:
   import/resolver:
     typescript: {}
@@ -53,3 +54,4 @@ rules:
   no-unused-vars: off
   '@typescript-eslint/no-unused-vars': error
   react/require-default-props: off
+  unused-imports/no-unused-imports: error

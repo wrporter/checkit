@@ -89,7 +89,7 @@ describe('Todo List', () => {
 
             cy.visit('/')
 
-            cy.findByText('Failed to load!').should('exist')
+            cy.findByText('Failed to load items.').should('exist')
         })
     })
 })

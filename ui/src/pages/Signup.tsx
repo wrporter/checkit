@@ -1,8 +1,8 @@
 import React from 'react';
 import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
-import { red } from '@mui/material/colors';
 import {
+    Alert,
     Button,
     IconButton,
     InputAdornment,
@@ -27,10 +27,6 @@ const useStyles = makeStyles((theme) => ({
         paddingBottom: theme.spacing(5),
         paddingRight: theme.spacing(3),
         paddingLeft: theme.spacing(3),
-    },
-    error: {
-        color: red['700'],
-        textShadow: '0 0 2px #ddd',
     },
     content: {
         width: '100%',
@@ -123,9 +119,7 @@ export default function Signup() {
                     Sign up
                 </Typography>
 
-                {error && (
-                    <Typography className={classes.error}>{error}</Typography>
-                )}
+                {error && <Alert>{error}</Alert>}
 
                 <Button
                     component="a"
