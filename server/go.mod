@@ -12,6 +12,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/websocket v1.4.2
 	github.com/pkg/errors v0.9.1
+	github.com/vearne/gin-timeout v0.0.9
 	go.mongodb.org/mongo-driver v1.8.2
 	go.uber.org/zap v1.20.0
 	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce

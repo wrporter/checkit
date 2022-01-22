@@ -1,4 +1,4 @@
-package limit
+package rate
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func buildLimit() *limiter.Limiter {
+func build() *limiter.Limiter {
 	options := &limiter.ExpirableOptions{
 		DefaultExpirationTTL: time.Hour,
 	}
@@ -24,15 +24,15 @@ func buildLimit() *limiter.Limiter {
 		panic(errors.Wrap(err, "Failed to parse response body"))
 	}
 
-	return tollbooth.NewLimiter(0, options).
+	return tollbooth.NewLimiter(5, options).
 		SetIPLookups([]string{"RemoteAddr", "X-Forwarded-For", "X-Real-IP"}).
-		SetBurst(0).
+		SetBurst(50).
 		SetMessageContentType("application/json").
 		SetMessage(string(responseBody))
 }
 
-func WithRateLimit() gin.HandlerFunc {
-	limit := buildLimit()
+func Limit() gin.HandlerFunc {
+	limit := build()
 
 	return func(c *gin.Context) {
 		httpError := tollbooth.LimitByRequest(limit, c.Writer, c.Request)

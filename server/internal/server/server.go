@@ -28,13 +28,6 @@ func New() *Server {
 	router.Use(ginzap.Recover())
 	router.Use(ginzap.Transaction())
 
-	// TODO: Add timeouts to routes so we don't hang up threads.
-	//router.Use(timeout.Timeout(
-	//	timeout.WithTimeout(10*time.Second),
-	//	timeout.WithErrorHttpCode(http.StatusRequestTimeout),
-	//	timeout.WithDefaultMsg(`{"status":408,"message":"Request Timeout"}`),
-	//))
-
 	validator := &validate.DefaultGinValidator{}
 	validator.RegisterValidator("itemStatus", store.ValidateItemStatus, "{0} must be a valid status")
 	binding.Validator = validator

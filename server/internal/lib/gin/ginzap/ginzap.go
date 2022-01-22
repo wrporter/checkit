@@ -4,12 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"github.com/wrporter/checkit/server/internal/lib/log"
-	transaction2 "github.com/wrporter/checkit/server/internal/lib/transaction"
+	"github.com/wrporter/checkit/server/internal/lib/transaction"
 	"net"
 	"net/http"
 	"net/http/httputil"
 	"os"
-	"runtime/debug"
 	"strings"
 	"time"
 
@@ -104,7 +103,6 @@ func Recover() gin.HandlerFunc {
 					zap.Time("time", time.Now()),
 					zap.Any("error", err),
 					zap.String("request", string(httpRequest)),
-					zap.String("stack", string(debug.Stack())),
 				)
 
 				c.AbortWithStatus(http.StatusInternalServerError)
@@ -119,13 +117,13 @@ func Recover() gin.HandlerFunc {
 // outgoing transaction headers.
 func Transaction() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		t := transaction2.FromRequest(c.Request)
+		t := transaction.FromRequest(c.Request)
 
 		// Set headers on the context and request
-		ctx := transaction2.SetOnContext(c.Request.Context(), t)
+		ctx := transaction.SetOnContext(c.Request.Context(), t)
 
 		// Set outgoing headers
-		transaction2.SetResponseHeaders(c.Writer, t)
+		transaction.SetResponseHeaders(c.Writer, t)
 
 		// Add transaction data to logs
 		ctx = log.NewContext(ctx, zap.String("transactionId", t.TransactionID))

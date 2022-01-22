@@ -3,9 +3,10 @@ package items
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	timeout "github.com/vearne/gin-timeout"
 	"github.com/wrporter/checkit/server/internal/lib/gin/auth/oauth"
 	"github.com/wrporter/checkit/server/internal/lib/httputil"
-	"github.com/wrporter/checkit/server/internal/lib/limit"
+	"github.com/wrporter/checkit/server/internal/lib/rate"
 	"github.com/wrporter/checkit/server/internal/lib/validate"
 	"github.com/wrporter/checkit/server/internal/server"
 	"github.com/wrporter/checkit/server/internal/server/store"
@@ -32,7 +33,14 @@ type (
 )
 
 func RegisterRoutes(s *server.Server) {
-	group := s.Router.Group("/api").Use(limit.WithRateLimit())
+	group := s.Router.Group("/api").
+		Use(rate.Limit()).
+		Use(timeout.Timeout(
+			timeout.WithTimeout(10*time.Second),
+			timeout.WithErrorHttpCode(http.StatusRequestTimeout),
+			timeout.WithDefaultMsg(`{"status":408,"message":"Request Timeout"}`),
+		))
+
 	{
 		group.GET("/items",
 			oauth.RequireAuth(s.SessionManager),
