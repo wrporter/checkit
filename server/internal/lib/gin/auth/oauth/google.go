@@ -131,7 +131,7 @@ func GoogleCallback(s store.Store, sessionManager *session.Manager) gin.HandlerF
 func login(c *gin.Context, s store.Store, profile OAuthProfile, sessionManager *session.Manager) {
 	u, err := s.GetUserByEmail(c.Request.Context(), profile.Email)
 	if errors.Is(err, mongo.ErrNoDocuments) {
-		c.JSON(http.StatusUnauthorized, httputil.ToHTTPError(http.StatusUnauthorized, "Invalid credentials"))
+		c.Redirect(http.StatusFound, "/signup?exists=false")
 		return
 	} else if err != nil {
 		log.SC(c.Request.Context()).Errorf("Failed to get user from database: %s", err.Error())

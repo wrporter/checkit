@@ -12,6 +12,7 @@ import {
 import { LoadingButton } from '@mui/lab';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useSearchParams } from 'react-router-dom';
 import { useAuthentication } from '../context/user';
 import { ReactComponent as GoogleLogo } from '../assets/google-logo.svg';
 import { signup, SignupForm } from '../services/UserService';
@@ -85,6 +86,8 @@ export default function Signup() {
         },
     });
 
+    const [searchParams] = useSearchParams();
+
     const [showPassword, setShowPassword] = React.useState(false);
     const handleClickShowPassword = () => {
         setShowPassword((v) => !v);
@@ -118,6 +121,13 @@ export default function Signup() {
                 <Typography variant="h4" component="h1">
                     Sign up
                 </Typography>
+
+                {searchParams.has('exists') && (
+                    <Alert severity="warning">
+                        The account you tried to log in with does not exist,
+                        would you like to sign up?
+                    </Alert>
+                )}
 
                 {error && <Alert severity="error">{error}</Alert>}
 
