@@ -1,5 +1,7 @@
 # Checkit
 
+[![CircleCI](https://circleci.com/gh/wrporter/checkit/tree/master.svg?style=svg)](https://circleci.com/gh/wrporter/checkit/tree/master)
+
 I started this project to learn a few things.
 
 - How to securely do social login.
