@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Button, Paper, Typography } from '@mui/material';
+import { Alert, Box, Button, Paper, Typography } from '@mui/material';
 import makeStyles from '@mui/styles/makeStyles';
-import { red } from '@mui/material/colors';
 import { LoadingButton } from '@mui/lab';
 import { FormProvider, useForm } from 'react-hook-form';
 import { Credentials, login } from '../services/UserService';
@@ -18,10 +17,6 @@ const useStyles = makeStyles((theme) => ({
         paddingBottom: theme.spacing(2),
         paddingRight: theme.spacing(3),
         paddingLeft: theme.spacing(3),
-    },
-    error: {
-        color: red['700'],
-        textShadow: '0 0 2px #ddd',
     },
     content: {
         width: '100%',
@@ -102,9 +97,7 @@ export default function Login() {
                     Log in
                 </Typography>
 
-                {error && (
-                    <Typography className={classes.error}>{error}</Typography>
-                )}
+                {error && <Alert severity="error">{error}</Alert>}
 
                 <Button
                     component="a"
