@@ -5,10 +5,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
+	timeout "github.com/vearne/gin-timeout"
 	"github.com/wrporter/checkit/server/internal/lib/gin/ginzap"
 	"github.com/wrporter/checkit/server/internal/lib/httputil"
-	"github.com/wrporter/checkit/server/internal/lib/limit"
 	"github.com/wrporter/checkit/server/internal/lib/log"
+	"github.com/wrporter/checkit/server/internal/lib/rate"
 	"github.com/wrporter/checkit/server/internal/lib/session"
 	"github.com/wrporter/checkit/server/internal/lib/validate"
 	"github.com/wrporter/checkit/server/internal/server"
@@ -62,40 +63,44 @@ var (
 	}
 )
 
-//func init() {
-//	gob.Register(UserResponse{})
-//}
-
-// TODO switch from Implicit Grant Flow to Authorization Code Flow
 func RegisterRoutes(server *server.Server) {
-	group := server.Router.Group("/api/auth").Use(limit.WithRateLimit())
+	authGroup := server.Router.Group("/api/auth").
+		Use(rate.Limit()).
+		Use(timeout.Timeout(
+			timeout.WithTimeout(10*time.Second),
+			timeout.WithErrorHttpCode(http.StatusRequestTimeout),
+			timeout.WithDefaultMsg(`{"status":408,"message":"Request Timeout"}`),
+		))
 	{
-		group.GET("/oauth/google", GoogleCallback(server.Store, server.SessionManager))
-		group.GET("/oauth/google/:method", HandleGoogleLogin)
-
-		group.POST("/login",
+		authGroup.POST("/login",
 			validate.RequestBody(LoginRequest{}),
 			Login(server.Store, server.SessionManager),
 		)
 
-		group.POST("/signup",
+		authGroup.POST("/signup",
 			validate.RequestBody(SignupRequest{}),
 			Signup(server.Store, server.SessionManager),
 		)
 
-		group.POST("/logout",
+		authGroup.POST("/logout",
 			RequireAuth(server.SessionManager),
 			Logout(server.SessionManager),
 		)
 
-		group.GET("/user",
+		authGroup.GET("/user",
 			RequireAuth(server.SessionManager),
 			GetUser(server.Store, server.SessionManager),
 		)
-		group.DELETE("/user",
+		authGroup.DELETE("/user",
 			RequireAuth(server.SessionManager),
 			DeleteUser(server.Store, server.SessionManager),
 		)
+	}
+
+	oauthGroup := server.Router.Group("/api/auth/oauth").Use(rate.Limit())
+	{
+		oauthGroup.GET("/google", GoogleCallback(server.Store, server.SessionManager))
+		oauthGroup.GET("/google/:method", HandleGoogleLogin)
 	}
 
 	server.Router.GET("/api/keepalive", Keepalive(server.SessionManager))

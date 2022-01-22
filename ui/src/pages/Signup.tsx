@@ -119,7 +119,7 @@ export default function Signup() {
                     Sign up
                 </Typography>
 
-                {error && <Alert>{error}</Alert>}
+                {error && <Alert severity="error">{error}</Alert>}
 
                 <Button
                     component="a"

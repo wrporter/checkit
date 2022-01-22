@@ -49,16 +49,13 @@ var (
 const oauthGoogleAPIURL = "https://www.googleapis.com/oauth2/v2/userinfo?access_token="
 
 func HandleGoogleLogin(c *gin.Context) {
-	log.SC(c.Request.Context()).Infof("Cookies before: %s", c.Request.Cookies())
 	state := setOAuthStateCookie(c.Writer, c.Param("method"))
-	log.SC(c.Request.Context()).Infof("State: %s", state)
 	u := oauthGoogleConfig.AuthCodeURL(state)
 	c.Redirect(http.StatusTemporaryRedirect, u)
 }
 
 func GoogleCallback(s store.Store, sessionManager *session.Manager) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		log.SC(c.Request.Context()).Infof("Cookies: %v", c.Request.Cookies())
 		stateCookie, _ := c.Cookie(stateCookieName)
 		stateParam := c.Query("state")
 		if stateParam != stateCookie {
@@ -70,7 +67,6 @@ func GoogleCallback(s store.Store, sessionManager *session.Manager) gin.HandlerF
 		// Delete the state cookie
 		c.SetCookie(stateCookieName, "", -1, "/", env.SiteHost, true, true)
 
-		//log.SC(c.Request.Context()).Infof("State: %s", stateParam)
 		state := OAuthState{}
 		decoded, err := base64.URLEncoding.DecodeString(stateParam)
 		if err != nil {
@@ -84,7 +80,6 @@ func GoogleCallback(s store.Store, sessionManager *session.Manager) gin.HandlerF
 			c.Redirect(http.StatusTemporaryRedirect, "/")
 			return
 		}
-		//log.SC(c.Request.Context()).Infof("OAuth state: %+v", state)
 
 		code := c.Query("code")
 		if code == "" {
