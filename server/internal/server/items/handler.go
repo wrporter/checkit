@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	timeout "github.com/vearne/gin-timeout"
-	"github.com/wrporter/checkit/server/internal/lib/gin/auth/oauth"
+	"github.com/wrporter/checkit/server/internal/lib/gin/auth"
 	"github.com/wrporter/checkit/server/internal/lib/httputil"
 	"github.com/wrporter/checkit/server/internal/lib/rate"
 	"github.com/wrporter/checkit/server/internal/lib/validate"
@@ -43,24 +43,24 @@ func RegisterRoutes(s *server.Server) {
 
 	{
 		group.GET("/items",
-			oauth.RequireAuth(s.SessionManager),
+			auth.RequireAuth(s.SessionManager),
 			GetItems(s),
 		)
 		group.POST("/items",
-			oauth.RequireAuth(s.SessionManager),
+			auth.RequireAuth(s.SessionManager),
 			validate.RequestBody(ItemRequest{}),
 			PostItem(s),
 		)
 		group.DELETE("/items",
-			oauth.RequireAuth(s.SessionManager),
+			auth.RequireAuth(s.SessionManager),
 			DeleteItems(s),
 		)
 		group.DELETE("/items/completed",
-			oauth.RequireAuth(s.SessionManager),
+			auth.RequireAuth(s.SessionManager),
 			DeleteCompletedItems(s),
 		)
 		group.POST(fmt.Sprintf("/items/:%s", ParamItemID),
-			oauth.RequireAuth(s.SessionManager),
+			auth.RequireAuth(s.SessionManager),
 			validate.RequestBody(ItemUpdateStatusRequest{}),
 			UpdateItemStatus(s),
 		)

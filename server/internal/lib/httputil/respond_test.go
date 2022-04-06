@@ -127,8 +127,6 @@ func TestRespondWithError(t *testing.T) {
 		rr := httptest.NewRecorder()
 		req := httptest.NewRequest("GET", "/", nil)
 		ctx := context.Background()
-		//tx := transaction.Transaction{TransactionID: "b99ef861-9978-4042-887c-5ff6c8861e6c"}
-		//ctx = transaction.SetOnContext(ctx, tx)
 		req = req.WithContext(ctx)
 		RespondWithError(rr, req, c.err)
 		result := rr.Result()
@@ -137,7 +135,7 @@ func TestRespondWithError(t *testing.T) {
 			t.Errorf("TestRespondWithError [case %d] expected status code %d but got %d", i, c.expectedStatusCode, result.StatusCode)
 		}
 		responseBody, _ := ioutil.ReadAll(result.Body)
-		match, _ := regexp.Match(`^\{"status":[^\"]+,"message":"[^\"]+","time":"[^\"]+","transactionID":"[^\"]+"}$`, responseBody)
+		match, _ := regexp.Match(`^\{"status":[^\"]+,"message":"[^\"]+","time":"[^\"]+"}$`, responseBody)
 		if !match {
 			t.Errorf("TestRespondWithError [case %d] response does not match expected pattern \"%s\"", i, string(responseBody))
 		}

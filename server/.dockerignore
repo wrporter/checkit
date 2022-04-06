@@ -1,4 +1,6 @@
 *
+!.ci/test.sh
+!.ci/show_test_output.go
 !cmd
 !internal
 !go.mod

@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "build": "react-scripts build",
-    "ci": "npm run lint && npm run build",
+    "ci": "npm run lint && npm run test:coverage && npm run build",
     "format": "prettier --write src/**/*.ts{,x}",
     "lint": "tsc --noEmit && eslint src --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "npm run lint -- --fix",
     "start": "PORT=9010 react-scripts start",
-    "test": "react-scripts test"
+    "test": "react-scripts test --watchAll=false",
+    "test:coverage": "react-scripts test --watchAll=false --coverage",
+    "test:watch": "react-scripts test"
   },
   "dependencies": {
     "@emotion/react": "^11.7.1",
@@ -29,6 +31,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
+    "@testing-library/react-hooks": "^7.0.2",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.4.0",
     "@types/node": "^17.0.10",
@@ -59,6 +62,26 @@
     "singleQuote": true,
     "tabWidth": 4,
     "trailingComma": "es5"
+  },
+  "jest": {
+    "clearMocks": true,
+    "resetMocks": true,
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx,ts,tsx}",
+      "!**/*.test.util.ts",
+      "!src/index.tsx",
+      "!src/**/*.d.ts",
+      "!src/setupProxy.js",
+      "!src/setupTests.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "lines": 25,
+        "branches": 25,
+        "functions": 25,
+        "statements": 25
+      }
+    }
   },
   "browserslist": {
     "production": [

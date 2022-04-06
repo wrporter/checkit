@@ -9,63 +9,58 @@ export interface SignupForm {
     password: string;
 }
 
-export function getUser() {
-    return fetch('/api/auth/user').then((response) => {
-        if (response.status === 204 || response.status >= 400) {
-            return Promise.resolve();
-        }
-        return response.json();
-    });
+export async function getUser() {
+    const response = await fetch('/api/auth/user');
+    if (response.status >= 400) {
+        return Promise.reject(response.json());
+    }
+    return response.json();
 }
 
-export function login(credentials: Credentials) {
-    return fetch('/api/auth/login', {
+export async function login(credentials: Credentials) {
+    const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(credentials),
-    }).then((response) => {
-        if (response.status >= 400) {
-            return Promise.reject(response.json());
-        }
-        return response.json();
     });
+    if (response.status >= 400) {
+        return Promise.reject(response.json());
+    }
+    return response.json();
 }
 
-export function signup(form: SignupForm) {
-    return fetch('/api/auth/signup', {
+export async function signup(form: SignupForm) {
+    const response = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(form),
-    }).then((response) => {
-        if (response.status >= 400) {
-            return Promise.reject();
-        }
-        return Promise.resolve();
     });
+    if (response.status >= 400) {
+        return Promise.reject();
+    }
+    return Promise.resolve();
 }
 
-export function logout() {
-    return fetch('/api/auth/logout', {
+export async function logout() {
+    const response = await fetch('/api/auth/logout', {
         method: 'POST',
-    }).then((response) => {
-        if (response.status >= 400) {
-            return Promise.reject(response.json());
-        }
-        return null;
     });
+    if (response.status >= 400) {
+        return Promise.reject(response.json());
+    }
+    return null;
 }
 
-export function deleteUser() {
-    return fetch('/api/auth/user', {
+export async function deleteUser() {
+    const response = await fetch('/api/auth/user', {
         method: 'DELETE',
-    }).then((response) => {
-        if (response.status >= 400) {
-            return Promise.reject(response.json());
-        }
-        return null;
     });
+    if (response.status >= 400) {
+        return Promise.reject(response.json());
+    }
+    return null;
 }

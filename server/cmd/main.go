@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/wrporter/checkit/server/internal/lib/env"
-	"github.com/wrporter/checkit/server/internal/lib/gin/auth/oauth"
+	"github.com/wrporter/checkit/server/internal/lib/gin/auth"
 	"github.com/wrporter/checkit/server/internal/lib/log"
 	"github.com/wrporter/checkit/server/internal/server"
 	"github.com/wrporter/checkit/server/internal/server/items"
@@ -14,7 +14,7 @@ func main() {
 	log.MustInit()
 
 	s := server.New()
-	oauth.RegisterRoutes(s)
+	auth.RegisterRoutes(s)
 	items.RegisterRoutes(s)
 
 	zap.S().Infof("Listening at %s", env.AppDomain())

@@ -1,6 +1,5 @@
 import React, { createContext, useContext } from 'react';
 import { useQuery } from 'react-query';
-import { red } from '@mui/material/colors';
 import { useNavigate } from 'react-router-dom';
 import * as authService from '../../services/UserService';
 import { getUser } from '../../services/UserService';
@@ -24,7 +23,6 @@ function AuthenticationProvider({ ...rest }) {
         React.useState(false);
     const {
         data: user,
-        error,
         isLoading,
         isFetched,
         refetch,
@@ -43,11 +41,13 @@ function AuthenticationProvider({ ...rest }) {
             await refetch();
             navigate('/', { replace: true });
         }
+
         async function register(signupRequest: Promise<void>) {
             await signupRequest;
             await refetch();
             navigate('/', { replace: true });
         }
+
         async function logout() {
             await authService.logout();
             await refetch();
@@ -63,18 +63,8 @@ function AuthenticationProvider({ ...rest }) {
         };
     }, [user, refetch, navigate]);
 
-    if (!firstAttemptFinished) {
-        if (isLoading) {
-            return <FullPageSpinner />;
-        }
-        if (error) {
-            return (
-                <div style={{ color: red['900'] }}>
-                    <p>Uh oh... There is a problem. Try refreshing the app.</p>
-                    <pre>{error.message}</pre>
-                </div>
-            );
-        }
+    if (!firstAttemptFinished && isLoading) {
+        return <FullPageSpinner />;
     }
 
     return <AuthenticationContext.Provider value={value} {...rest} />;
