@@ -12,6 +12,8 @@ import Header from '~/components/Header';
 import TextLink from '~/components/TextLink';
 import Checkbox from '~/components/Checkbox';
 import { authenticator } from '~/auth.server';
+import { json } from '@remix-run/node';
+import { validateEmail } from '~/utils';
 
 export const loader: LoaderFunction = async ({ request }) => {
     return await authenticator.isAuthenticated(request, {
@@ -27,16 +29,33 @@ interface ActionData {
 }
 
 export const action: ActionFunction = async ({ request }) => {
-    // TODO: Cannot read form data more than once
-    // const formData = await request.formData();
-    // const redirectTo = formData.get('redirectTo');
+    const requestClone = request.clone();
+    const formData = await requestClone.formData();
+    const redirectTo = formData.get('redirectTo');
+
+    const email = formData.get('email');
+    const password = formData.get('password');
+
+    if (!validateEmail(email)) {
+        return json<ActionData>(
+            { errors: { email: 'Email is invalid' } },
+            { status: 400 }
+        );
+    }
+
+    if (typeof password !== 'string' || !password) {
+        return json<ActionData>(
+            { errors: { password: 'Password is required' } },
+            { status: 400 }
+        );
+    }
+
     return authenticator.authenticate('basic', request, {
-        // successRedirect: typeof redirectTo === 'string' ? redirectTo : '/home',
-        successRedirect: '/home',
+        successRedirect: typeof redirectTo === 'string' ? redirectTo : '/home',
         failureRedirect: '/login',
         throwOnError: true,
     });
-    // TODO: Handle showing form validation errors
+    // TODO: Handle showing form validation errors with yup
 };
 
 export const meta: MetaFunction = () => {
@@ -49,7 +68,6 @@ export default function LoginPage() {
     const [searchParams] = useSearchParams();
     const redirectTo = searchParams.get('redirectTo') || '/home';
     const actionData = useActionData() as ActionData;
-    console.log(actionData);
     const emailRef = React.useRef<HTMLInputElement>(null);
     const passwordRef = React.useRef<HTMLInputElement>(null);
 

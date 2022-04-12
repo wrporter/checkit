@@ -36,7 +36,7 @@ export default function ProfilePage() {
                             className="h-20 w-20 rounded-full"
                         />
                     ) : (
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
+                        <span className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-4xl text-white">
                             {user.displayName.charAt(0).toUpperCase()}
                         </span>
                     )}

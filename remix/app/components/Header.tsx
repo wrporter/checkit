@@ -34,7 +34,7 @@ export default function Header() {
                                     className="h-8 w-8 rounded-full"
                                 />
                             ) : (
-                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-xs text-white">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-sm text-white">
                                     {user.displayName.charAt(0).toUpperCase()}
                                 </span>
                             )}
