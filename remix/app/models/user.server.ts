@@ -44,7 +44,7 @@ function toUserWithoutPassword(mongoUser: MongoUser | null): User | null {
 
 export async function getUserById(id: string): Promise<User | null> {
     const user = await (
-        await mongo
+        await mongo()
     )
         .db()
         .collection('users')
@@ -54,7 +54,7 @@ export async function getUserById(id: string): Promise<User | null> {
 }
 
 export async function getUserByEmail(email: string): Promise<User | null> {
-    const user = await mongo
+    const user = await (await mongo())
         .db()
         .collection('users')
         .findOne<MongoUser>({ email });
@@ -85,20 +85,20 @@ export async function createUser(
         user.password = await bcrypt.hash(password, 10);
     }
 
-    await mongo.db().collection<MongoUser>('users').insertOne(user);
+    await (await mongo()).db().collection<MongoUser>('users').insertOne(user);
 
     return toUserWithoutPassword(user) as User;
 }
 
 export async function deleteUserByEmail(email: string) {
-    return mongo.db().collection('users').deleteOne({ email });
+    return (await mongo()).db().collection('users').deleteOne({ email });
 }
 
 export async function verifyLogin(
     email: string,
     password: string
 ): Promise<User | null> {
-    const userWithPassword = await mongo
+    const userWithPassword = await (await mongo())
         .db()
         .collection('users')
         .findOne<MongoUser>({ email });

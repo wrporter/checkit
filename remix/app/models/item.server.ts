@@ -24,7 +24,7 @@ export async function createItem(userId: string, text: string): Promise<Item> {
         dateCreated: new Date(),
     };
 
-    await mongo.db().collection<MongoItem>('items').insertOne(item);
+    await (await mongo()).db().collection<MongoItem>('items').insertOne(item);
 
     return {
         id: item._id.toHexString(),
@@ -35,7 +35,9 @@ export async function createItem(userId: string, text: string): Promise<Item> {
 }
 
 export async function getItemsForUser(userId: string): Promise<Item[]> {
-    const items = await mongo
+    const items = await (
+        await mongo()
+    )
         .db()
         .collection<MongoItem>('items')
         .find(
@@ -54,7 +56,9 @@ export async function getItemsForUser(userId: string): Promise<Item[]> {
 }
 
 export async function deleteItemsForUser(userId: string): Promise<void> {
-    await mongo
+    await (
+        await mongo()
+    )
         .db()
         .collection('items')
         .deleteMany({ userId: ObjectId.createFromHexString(userId) });
@@ -63,7 +67,9 @@ export async function deleteItemsForUser(userId: string): Promise<void> {
 export async function deleteCompletedItemsForUser(
     userId: string
 ): Promise<void> {
-    await mongo
+    await (
+        await mongo()
+    )
         .db()
         .collection('items')
         .deleteMany({
@@ -77,7 +83,9 @@ export async function updateItemStatus(
     itemId: string,
     status: 'complete' | 'incomplete'
 ): Promise<void> {
-    await mongo
+    await (
+        await mongo()
+    )
         .db()
         .collection('items')
         .updateOne(
