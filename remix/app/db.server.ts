@@ -31,4 +31,6 @@ function mongo(): Promise<MongoClient> {
     });
 }
 
+mongo();
+
 export { mongo };
