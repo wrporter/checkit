@@ -1,4 +1,5 @@
 import { MongoClient } from 'mongodb';
+import logger from '../server/logger';
 
 declare global {
     var __db__: MongoClient;
@@ -14,13 +15,13 @@ function mongo(): Promise<MongoClient> {
             'mongodb://localhost:27017/checkit',
             (error, client) => {
                 if (error) {
-                    console.error(
+                    logger.error(
                         'Failed to connect to the Mongo database!',
                         error
                     );
                     reject(error);
                 } else if (client) {
-                    console.log(
+                    logger.info(
                         'Successfully connected to the Mongo database!'
                     );
                     global.__db__ = client;

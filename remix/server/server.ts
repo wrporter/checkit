@@ -2,9 +2,10 @@ import path from 'path';
 import express from 'express';
 import compression from 'compression';
 import { createRequestHandler } from '@remix-run/express';
-import promBundle from 'express-prom-bundle';
-import { configureAccessLogs } from './access-logs';
-import { requestTraceMiddleware } from './request-tracing';
+import { accessLogMiddleware } from './access-logs';
+import { metricsMiddleware } from './metrics';
+import { requestTransactionMiddleware } from './transaction';
+import logger from './logger';
 
 const BUILD_DIR = path.join(process.cwd(), 'build');
 
@@ -12,23 +13,10 @@ export const app = express();
 
 app.use(compression());
 
-// Configure prometheus metrics
-const metricsMiddleware = promBundle({
-    includeMethod: true,
-    includePath: true,
-    includeStatusCode: true,
-    includeUp: true,
-    customLabels: {
-        project_name: 'checkit',
-    },
-    promClient: {
-        collectDefaultMetrics: {},
-    },
-});
-
+// Custom middleware
 app.use(metricsMiddleware);
-app.use(requestTraceMiddleware);
-configureAccessLogs(app);
+app.use(requestTransactionMiddleware);
+app.use(accessLogMiddleware);
 
 // http://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
@@ -63,6 +51,11 @@ app.all(
               purgeRequireCache();
 
               return createRequestHandler({
+                  getLoadContext(req) {
+                      return {
+                          transactionContext: (req as any).transactionContext,
+                      };
+                  },
                   build: require(BUILD_DIR),
                   mode: process.env.NODE_ENV,
               })(req, res, next);
@@ -72,8 +65,9 @@ app.all(
               mode: process.env.NODE_ENV,
           })
 );
+
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(`Express server listening on port ${port}`);
+    logger.info(`Express server listening on port ${port}`);
 });

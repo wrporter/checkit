@@ -1,7 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
-// this
-export const requestTraceMiddleware = (
+
+export interface TransactionContext {
+    transactionId: string;
+    requestId: string;
+    parentRequestId?: string;
+}
+
+export const requestTransactionMiddleware = (
     req: Request,
     res: Response,
     next: NextFunction
@@ -10,7 +16,9 @@ export const requestTraceMiddleware = (
     const parentRequestId = req.header('X-Parent-Request-ID');
     const requestId = uuidv4();
 
-    (req as any).traceContext = {
+    (
+        req as Request & { transactionContext: TransactionContext }
+    ).transactionContext = {
         transactionId,
         requestId,
         parentRequestId,

@@ -14,12 +14,17 @@ import { CheckIcon } from '@heroicons/react/solid';
 import Button from '~/components/Button';
 import Tooltip from '~/components/Tooltip';
 import useLocalStorage from '~/hooks/useLocalStorage';
+import logger from '../../server/logger';
 
 type LoaderData = {
     items: Awaited<ReturnType<typeof getItemsForUser>>;
 };
 
-export const loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request, context }) => {
+    logger.info(
+        'Example log with transaction context',
+        context.transactionContext
+    );
     const user = await requireUser(request);
     const items = await getItemsForUser(user.id);
     return json<LoaderData>({ items });

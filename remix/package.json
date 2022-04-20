@@ -54,7 +54,8 @@
     "remix-auth-google": "^1.1.0",
     "rotating-file-stream": "^3.0.3",
     "tiny-invariant": "^1.2.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "winston": "^3.7.2"
   },
   "devDependencies": {
     "@faker-js/faker": "^6.1.1",
