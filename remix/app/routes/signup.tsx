@@ -11,7 +11,6 @@ import { createUser, getUserByEmail } from '~/models/user.server';
 import { validateEmail } from '~/utils';
 import Button from '~/components/Button';
 import TextField from '~/components/TextField';
-import Header from '~/components/Header';
 import TextLink from '~/components/TextLink';
 import { authenticator } from '~/auth.server';
 
@@ -111,162 +110,152 @@ export default function Signup() {
     }, [actionData]);
 
     return (
-        <div className="flex h-full min-h-screen flex-col bg-gradient-to-r from-lime-300 to-cyan-400">
-            <Header />
+        <div className="flex h-full flex-col bg-gradient-to-r from-lime-300 to-cyan-400 py-6 sm:py-8 lg:py-10">
+            <h2 className="mb-6 text-center text-4xl">Sign up</h2>
 
-            <div className="my-6 flex flex-col justify-center sm:my-8 lg:my-10">
-                <h2 className="mb-6 text-center text-4xl">Sign up</h2>
+            <Form
+                action="/auth/google"
+                method="post"
+                className="mx-auto mb-8 w-full max-w-md"
+            >
+                <input type="hidden" name="redirectTo" value={redirectTo} />
+                <input type="hidden" name="action" value="signup" />
 
-                <Form
-                    action="/auth/google"
-                    method="post"
-                    className="mx-auto mb-8 w-full max-w-md"
+                <Button
+                    type="submit"
+                    kind="tertiary"
+                    className="flex w-full items-center justify-center space-x-4"
                 >
-                    <input type="hidden" name="redirectTo" value={redirectTo} />
-                    <input type="hidden" name="action" value="signup" />
+                    <img
+                        src="/assets/google-logo.svg"
+                        alt=""
+                        className="h-6 w-6"
+                    />
+                    <span>Sign up with Google</span>
+                </Button>
+            </Form>
 
-                    <Button
-                        type="submit"
-                        kind="tertiary"
-                        className="flex w-full items-center justify-center space-x-4"
-                    >
-                        <img
-                            src="/assets/google-logo.svg"
-                            alt=""
-                            className="h-6 w-6"
-                        />
-                        <span>Sign up with Google</span>
-                    </Button>
-                </Form>
-
-                <div className="mx-auto w-full max-w-md rounded bg-white px-8 py-8 drop-shadow">
-                    <Form method="post" className="space-y-6">
-                        <div>
-                            <label
-                                htmlFor="displayName"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Display name
-                            </label>
-                            <div className="mt-1">
-                                <TextField
-                                    ref={displayNameRef}
-                                    id="displayName"
-                                    required
-                                    // eslint-disable-next-line jsx-a11y/no-autofocus
-                                    autoFocus
-                                    name="displayName"
-                                    type="displayName"
-                                    autoComplete="displayName"
-                                    aria-invalid={
-                                        actionData?.errors?.displayName
-                                            ? true
-                                            : undefined
-                                    }
-                                    aria-describedby="displayName-error"
-                                    className="w-full"
-                                />
-                                {actionData?.errors?.displayName && (
-                                    <div
-                                        className="pt-1 text-red-700"
-                                        id="displayName-error"
-                                    >
-                                        {actionData.errors.displayName}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="email"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Email address
-                            </label>
-                            <div className="mt-1">
-                                <TextField
-                                    ref={emailRef}
-                                    id="email"
-                                    required
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    aria-invalid={
-                                        actionData?.errors?.email
-                                            ? true
-                                            : undefined
-                                    }
-                                    aria-describedby="email-error"
-                                    className="w-full"
-                                />
-                                {actionData?.errors?.email && (
-                                    <div
-                                        className="pt-1 text-red-700"
-                                        id="email-error"
-                                    >
-                                        {actionData.errors.email}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label
-                                htmlFor="password"
-                                className="block text-sm font-medium text-gray-700"
-                            >
-                                Password
-                            </label>
-                            <div className="mt-1">
-                                <TextField
-                                    id="password"
-                                    ref={passwordRef}
-                                    name="password"
-                                    type="password"
-                                    autoComplete="new-password"
-                                    aria-invalid={
-                                        actionData?.errors?.password
-                                            ? true
-                                            : undefined
-                                    }
-                                    aria-describedby="password-error"
-                                    className="w-full"
-                                />
-                                {actionData?.errors?.password && (
-                                    <div
-                                        className="pt-1 text-red-700"
-                                        id="password-error"
-                                    >
-                                        {actionData.errors.password}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <input
-                            type="hidden"
-                            name="redirectTo"
-                            value={redirectTo}
-                        />
-                        <Button type="submit" className="w-full">
-                            Create Account
-                        </Button>
-                        <div className="flex items-center justify-center">
-                            <div className="text-center text-sm text-gray-500">
-                                Already have an account?{' '}
-                                <TextLink
-                                    to={{
-                                        pathname: '/login',
-                                        search: searchParams.toString(),
-                                    }}
+            <div className="mx-auto w-full max-w-md rounded bg-white px-8 py-8 drop-shadow">
+                <Form method="post" className="space-y-6">
+                    <div>
+                        <label
+                            htmlFor="displayName"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Display name
+                        </label>
+                        <div className="mt-1">
+                            <TextField
+                                ref={displayNameRef}
+                                id="displayName"
+                                required
+                                // eslint-disable-next-line jsx-a11y/no-autofocus
+                                autoFocus
+                                name="displayName"
+                                type="displayName"
+                                autoComplete="displayName"
+                                aria-invalid={
+                                    actionData?.errors?.displayName
+                                        ? true
+                                        : undefined
+                                }
+                                aria-describedby="displayName-error"
+                                className="w-full"
+                            />
+                            {actionData?.errors?.displayName && (
+                                <div
+                                    className="pt-1 text-red-700"
+                                    id="displayName-error"
                                 >
-                                    Log in
-                                </TextLink>
-                            </div>
+                                    {actionData.errors.displayName}
+                                </div>
+                            )}
                         </div>
-                    </Form>
-                </div>
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Email address
+                        </label>
+                        <div className="mt-1">
+                            <TextField
+                                ref={emailRef}
+                                id="email"
+                                required
+                                name="email"
+                                type="email"
+                                autoComplete="email"
+                                aria-invalid={
+                                    actionData?.errors?.email ? true : undefined
+                                }
+                                aria-describedby="email-error"
+                                className="w-full"
+                            />
+                            {actionData?.errors?.email && (
+                                <div
+                                    className="pt-1 text-red-700"
+                                    id="email-error"
+                                >
+                                    {actionData.errors.email}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-gray-700"
+                        >
+                            Password
+                        </label>
+                        <div className="mt-1">
+                            <TextField
+                                id="password"
+                                ref={passwordRef}
+                                name="password"
+                                type="password"
+                                autoComplete="new-password"
+                                aria-invalid={
+                                    actionData?.errors?.password
+                                        ? true
+                                        : undefined
+                                }
+                                aria-describedby="password-error"
+                                className="w-full"
+                            />
+                            {actionData?.errors?.password && (
+                                <div
+                                    className="pt-1 text-red-700"
+                                    id="password-error"
+                                >
+                                    {actionData.errors.password}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="redirectTo" value={redirectTo} />
+                    <Button type="submit" className="w-full">
+                        Create Account
+                    </Button>
+                    <div className="flex items-center justify-center">
+                        <div className="text-center text-sm text-gray-500">
+                            Already have an account?{' '}
+                            <TextLink
+                                to={{
+                                    pathname: '/login',
+                                    search: searchParams.toString(),
+                                }}
+                            >
+                                Log in
+                            </TextLink>
+                        </div>
+                    </div>
+                </Form>
             </div>
         </div>
     );

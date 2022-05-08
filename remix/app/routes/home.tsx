@@ -1,4 +1,3 @@
-import Header from '~/components/Header';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import type { Item } from '~/models/item.server';
@@ -89,8 +88,6 @@ export default function HomePage() {
 
     return (
         <div className="flex h-full min-h-screen flex-col">
-            <Header />
-
             <main className="p-8">
                 <div className="flex items-end space-x-1">
                     <items.Form

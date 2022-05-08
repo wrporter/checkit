@@ -1,4 +1,3 @@
-import Header from '~/components/Header';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { requireUser } from '~/auth.server';
@@ -25,8 +24,6 @@ export default function ProfilePage() {
 
     return (
         <div className="flex h-full min-h-screen flex-col">
-            <Header />
-
             <main className="p-8">
                 <div className="mx-auto flex flex-row space-x-4">
                     {user.imageUrl ? (

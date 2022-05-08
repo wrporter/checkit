@@ -20,6 +20,8 @@ import reachTooltipStylesheetUrl from '@reach/tooltip/styles.css';
 
 import { json } from '@remix-run/node';
 import { getUser } from '~/auth.server';
+import Header from '~/components/Header';
+import { useOptionalUser } from '~/utils';
 
 export const links: LinksFunction = () => {
     return [
@@ -48,6 +50,8 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function App() {
+    const user = useOptionalUser();
+
     return (
         <html lang="en" className="h-full">
             <head>
@@ -55,7 +59,11 @@ export default function App() {
                 <Links />
             </head>
             <body className="h-full text-slate-700">
-                <Outlet />
+                <div className="flex h-full min-h-screen flex-col">
+                    <Header />
+                    <Outlet />
+                </div>
+
                 <ScrollRestoration />
                 <Scripts />
                 <LiveReload />
